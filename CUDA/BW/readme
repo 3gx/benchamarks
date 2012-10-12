@@ -7,5 +7,5 @@ for fp32 tests:
 nvcc -O3  -o shmem      shmem.cu -arch=sm_20 -Xptxas=-v   -Xcompiler="-Wall"
 
 for fp64 tests:
-nvcc -O3  -o shmem_fp64 shmem.cu -arch=sm_20 -Xptxas=-v   -Xcompiler="-Wall"
+nvcc -O3  -o shmem_fp64 shmem.cu -arch=sm_20 -Xptxas=-v   -Xcompiler="-Wall" -DFP64
 
