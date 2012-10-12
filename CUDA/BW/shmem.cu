@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cassert>
 #include <cstdlib>
+#include <vector>
 #include "rtc.h"
 #include "cudamem.h"
 
@@ -84,7 +85,8 @@ __global__ void dev_compute(
 
       case 3:
         const int laneId = threadIdx.x & 31;
-        const int x = sxd[laneId];
+        const real x = sxd[laneId];
+        __syncthreads();
 
 #pragma unroll
         for (int i = 0; i < M; i++)
@@ -93,8 +95,8 @@ __global__ void dev_compute(
           for (int j = 0; j < M; j++)
           {
 #ifdef SM30
-            const real xj = __shfl(x, j);
             const real xi = __shfl(x, i);
+            const real xj = __shfl(x, j);
 #else
             const real xi = sxd[i];
             const real xj = sxd[j];
@@ -115,11 +117,27 @@ __global__ void dev_compute(
         res += sxd[j]*sxd[i];
     }
   }
+  
 
   /* unlikely it will ever write result to RAM */
-  if (res == real(123.123456) && tid < n)
-    out[tid] = res;
+  if (tid < n)
+  {
+#ifndef CKSUM
+    if (res == real(123.123456))
+#endif
+      out[tid] = res;
+  }
+}
 
+static inline void cksum(const cuda_mem<real> &d, host_mem<real> &h)
+{
+#ifdef CKSUM
+  d.d2h(h);
+  double cksum = 0.0;
+  for (size_t i = 0; i < h.n; i++)
+    cksum += h[i]*h[i];
+  fprintf(stderr, " CKSUM= %16.15g  ", cksum);
+#endif
 }
 
 int main(int argc, char * argv[])
@@ -136,6 +154,11 @@ int main(int argc, char * argv[])
   d_in  .realloc(n);
   d_out .realloc(n);
 
+
+  std::vector<real> h0(n);
+  for (int i = 0; i < n; i++)
+    h0[i] = drand48();
+
 #ifdef FP64
   const int M = 16;
 #else
@@ -143,9 +166,8 @@ int main(int argc, char * argv[])
 #endif
   {
     fprintf(stderr, " compute  REG - REG : ");
-    const real   f = (real)argc;
     for (size_t i = 0; i < n; i++)
-      h_data[i] = f;
+      h_data[i] = h0[i];
     d_in.h2d(h_data);
 
     const double t0 = rtc();
@@ -153,13 +175,13 @@ int main(int argc, char * argv[])
     dev_compute<M,0><<<grid(NTHREADS,n), NTHREADS>>>(n, d_in, d_out);
     CUDA_SAFE_CALL(cudaThreadSynchronize());
     const double dt =  rtc() - t0;
+    cksum(d_out, h_data);
     fprintf(stderr, " %g GFLOP/s\n", n*M*M*2/dt/1e9);
   }
   {
     fprintf(stderr, " compute SHMEM- REG : ");
-    const real   f = (real)argc;
     for (size_t i = 0; i < n; i++)
-      h_data[i] = f;
+      h_data[i] = h0[i];
     d_in.h2d(h_data);
 
     const double t0 = rtc();
@@ -167,13 +189,13 @@ int main(int argc, char * argv[])
     dev_compute<M,1><<<grid(NTHREADS,n), NTHREADS>>>(n, d_in, d_out);
     CUDA_SAFE_CALL(cudaThreadSynchronize());
     const double dt =  rtc() - t0;
+    cksum(d_out, h_data);
     fprintf(stderr, " %g GFLOP/s\n", n*M*M*2/dt/1e9);
   }
   {
     fprintf(stderr, " compute  REG -SHMEM: ");
-    const real   f = (real)argc;
     for (size_t i = 0; i < n; i++)
-      h_data[i] = f;
+      h_data[i] = h0[i];
     d_in.h2d(h_data);
 
     const double t0 = rtc();
@@ -181,14 +203,14 @@ int main(int argc, char * argv[])
     dev_compute<M,2><<<grid(NTHREADS,n), NTHREADS>>>(n, d_in, d_out);
     CUDA_SAFE_CALL(cudaThreadSynchronize());
     const double dt =  rtc() - t0;
+    cksum(d_out, h_data);
     fprintf(stderr, " %g GFLOP/s\n", n*M*M*2/dt/1e9);
   }
 #ifdef SM30
   {
     fprintf(stderr, " compute  SHFL-SHFL : ");
-    const real   f = (real)argc;
     for (size_t i = 0; i < n; i++)
-      h_data[i] = f;
+      h_data[i] = h0[i];
     d_in.h2d(h_data);
 
     const double t0 = rtc();
@@ -196,14 +218,14 @@ int main(int argc, char * argv[])
     dev_compute<M,3><<<grid(NTHREADS,n), NTHREADS>>>(n, d_in, d_out);
     CUDA_SAFE_CALL(cudaThreadSynchronize());
     const double dt =  rtc() - t0;
+    cksum(d_out, h_data);
     fprintf(stderr, " %g GFLOP/s\n", n*M*M*2/dt/1e9);
   }
 #endif
   {
     fprintf(stderr, " compute SHMEM-SHMEM: ");
-    const real   f = (real)argc;
     for (size_t i = 0; i < n; i++)
-      h_data[i] = f;
+      h_data[i] = h0[i];
     d_in.h2d(h_data);
 
     const double t0 = rtc();
@@ -211,6 +233,7 @@ int main(int argc, char * argv[])
     dev_compute<M,255><<<grid(NTHREADS,n), NTHREADS>>>(n, d_in, d_out);
     CUDA_SAFE_CALL(cudaThreadSynchronize());
     const double dt =  rtc() - t0;
+    cksum(d_out, h_data);
     fprintf(stderr, " %g GFLOP/s\n", n*M*M*2/dt/1e9);
   }
 
