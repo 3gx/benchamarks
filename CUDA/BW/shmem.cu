@@ -38,10 +38,10 @@ __global__ void dev_compute(
 
   real res = real(0.0);
 
-  const int t0 = ((tid >> WARP_SIZE2) << WARP_SIZE2) >> 1;
+  const int t0 = ((threadIdx.x >> WARP_SIZE2) << WARP_SIZE2) >> 1;
   volatile __shared__ real sxd[M];
-  if (tid < M)
-    sxd[tid] = in[t0+tid];
+  if (threadIdx.x < M)
+    sxd[threadIdx.x] = in[t0+threadIdx.x];
   __syncthreads();
 
   if (MODE <= 3)
