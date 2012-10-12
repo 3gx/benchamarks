@@ -1,0 +1,11 @@
+To compile:
+
+for bw test:
+nvcc -O3  -o gmem gmem.cu -arch=sm_20 -Xptxas=-v   -Xcompiler="-fopenmp -Wall"
+
+for fp32 tests:
+nvcc -O3  -o shmem      shmem.cu -arch=sm_20 -Xptxas=-v   -Xcompiler="-Wall"
+
+for fp64 tests:
+nvcc -O3  -o shmem_fp64 shmem.cu -arch=sm_20 -Xptxas=-v   -Xcompiler="-Wall"
+
