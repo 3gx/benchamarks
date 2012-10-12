@@ -34,62 +34,63 @@ __global__ void dev_compute(
 {
   const int bid = blockIdx.y*gridDim.x + blockIdx.x;
   const int tid = bid * blockDim.x + threadIdx.x;
-  
+
   real res = real(0.0);
 
   const int t0 = ((tid >> WARP_SIZE2) << WARP_SIZE2) >> 1;
-  if (MODE == 0)
-  {
+  volatile __shared__ real sxd[M];
+  if (tid < M)
+    sxd[tid] = in[t0+tid];
+  __syncthreads();
 
+  if (MODE <= 2)
+  {
     real xd[M];
 #pragma unroll
     for (int i = 0; i < M; i++)
-      xd[i] = in[t0+i];
+      xd[i] = sxd[i];
 
+    switch(MODE)
+    {
+      case 0:
+#pragma unroll
+        for (int i = 0; i < M; i++)
+        {
+#pragma unroll
+          for (int j = 0; j < M; j++)
+            res += xd[j]*xd[i];
+        }
+        break;
+
+      case 1:
+#pragma unroll
+        for (int i = 0; i < M; i++)
+        {
+#pragma unroll
+          for (int j = 0; j < M; j++)
+            res += sxd[j]*xd[i];
+        }
+        break;
+
+      case 2:
+#pragma unroll
+        for (int i = 0; i < M; i++)
+        {
+#pragma unroll
+          for (int j = 0; j < M; j++)
+            res += xd[j]*sxd[i];
+        }
+        break;
+    }
+  }
+  else
+  {
 #pragma unroll
     for (int i = 0; i < M; i++)
     {
 #pragma unroll
       for (int j = 0; j < M; j++)
-        res += xd[j]*xd[i];
-    }
-
-  }
-  else
-  {
-    volatile __shared__ real sxd[M];
-    if (tid < M)
-      sxd[tid] = in[t0+tid];
-    __syncthreads();
-
-    if (MODE == 1)
-    {
-
-      real xd[M];
-#pragma unroll
-      for (int i = 0; i < M; i++)
-        xd[i] = in[t0+i];
-
-#pragma unroll
-      for (int i = 0; i < M; i++)
-      {
-#pragma unroll
-        for (int j = 0; j < M; j++)
-          res += xd[j]*sxd[i];
-      }
-
-    }
-    else
-    {
-
-#pragma unroll
-      for (int i = 0; i < M; i++)
-      {
-#pragma unroll
-        for (int j = 0; j < M; j++)
-          res += sxd[j]*sxd[i];
-      }
-
+        res += sxd[j]*sxd[i];
     }
   }
 
@@ -147,7 +148,7 @@ int main(int argc, char * argv[])
     fprintf(stderr, " %g GFLOP/s\n", n*M*M*2/dt/1e9);
   }
   {
-    fprintf(stderr, " compute SHMEM-SHMEM: ");
+    fprintf(stderr, " compute  REG -SHMEM: ");
     const real   f = (real)argc;
     for (size_t i = 0; i < n; i++)
       h_data[i] = f;
@@ -156,6 +157,20 @@ int main(int argc, char * argv[])
     const double t0 = rtc();
     const int NTHREADS = 256;
     dev_compute<M,2><<<grid(NTHREADS,n), NTHREADS>>>(n, d_in, d_out);
+    CUDA_SAFE_CALL(cudaThreadSynchronize());
+    const double dt =  rtc() - t0;
+    fprintf(stderr, " %g GFLOP/s\n", n*M*M*2/dt/1e9);
+  }
+  {
+    fprintf(stderr, " compute SHMEM-SHMEM: ");
+    const real   f = (real)argc;
+    for (size_t i = 0; i < n; i++)
+      h_data[i] = f;
+    d_in.h2d(h_data);
+
+    const double t0 = rtc();
+    const int NTHREADS = 256;
+    dev_compute<M,3><<<grid(NTHREADS,n), NTHREADS>>>(n, d_in, d_out);
     CUDA_SAFE_CALL(cudaThreadSynchronize());
     const double dt =  rtc() - t0;
     fprintf(stderr, " %g GFLOP/s\n", n*M*M*2/dt/1e9);
