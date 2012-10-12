@@ -43,7 +43,7 @@ __global__ void dev_compute(
     sxd[tid] = in[t0+tid];
   __syncthreads();
 
-  if (MODE <= 2)
+  if (MODE <= 3)
   {
     real xd[M];
 #pragma unroll
@@ -79,6 +79,28 @@ __global__ void dev_compute(
 #pragma unroll
           for (int j = 0; j < M; j++)
             res += xd[j]*sxd[i];
+        }
+        break;
+
+      case 3:
+        const int laneId = threadIdx.x & 31;
+        const int x = sxd[laneId];
+
+#pragma unroll
+        for (int i = 0; i < M; i++)
+        {
+#pragma unroll
+          for (int j = 0; j < M; j++)
+          {
+#ifdef SM30
+            const real xj = __shfl(x, j);
+            const real xi = __shfl(x, i);
+#else
+            const real xi = sxd[i];
+            const real xj = sxd[j];
+#endif
+            res += xj*xi;
+          }
         }
         break;
     }
@@ -161,6 +183,22 @@ int main(int argc, char * argv[])
     const double dt =  rtc() - t0;
     fprintf(stderr, " %g GFLOP/s\n", n*M*M*2/dt/1e9);
   }
+#ifdef SM30
+  {
+    fprintf(stderr, " compute  SHFL-SHFL : ");
+    const real   f = (real)argc;
+    for (size_t i = 0; i < n; i++)
+      h_data[i] = f;
+    d_in.h2d(h_data);
+
+    const double t0 = rtc();
+    const int NTHREADS = 256;
+    dev_compute<M,3><<<grid(NTHREADS,n), NTHREADS>>>(n, d_in, d_out);
+    CUDA_SAFE_CALL(cudaThreadSynchronize());
+    const double dt =  rtc() - t0;
+    fprintf(stderr, " %g GFLOP/s\n", n*M*M*2/dt/1e9);
+  }
+#endif
   {
     fprintf(stderr, " compute SHMEM-SHMEM: ");
     const real   f = (real)argc;
@@ -170,7 +208,7 @@ int main(int argc, char * argv[])
 
     const double t0 = rtc();
     const int NTHREADS = 256;
-    dev_compute<M,3><<<grid(NTHREADS,n), NTHREADS>>>(n, d_in, d_out);
+    dev_compute<M,255><<<grid(NTHREADS,n), NTHREADS>>>(n, d_in, d_out);
     CUDA_SAFE_CALL(cudaThreadSynchronize());
     const double dt =  rtc() - t0;
     fprintf(stderr, " %g GFLOP/s\n", n*M*M*2/dt/1e9);
