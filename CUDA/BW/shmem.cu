@@ -176,7 +176,9 @@ int main(int argc, char * argv[])
     CUDA_SAFE_CALL(cudaThreadSynchronize());
     const double dt =  rtc() - t0;
     cksum(d_out, h_data);
-    fprintf(stderr, " %g GFLOP/s\n", n*M*M*2/dt/1e9);
+    fprintf(stderr, " %g GFLOP/s  rgstr bw: %g GB/s\n", 
+        n*M*M*2/dt/1e9,
+        n*M*M*2.0*sizeof(real)/dt/1e9);
   }
   {
     fprintf(stderr, " compute SHMEM- REG : ");
