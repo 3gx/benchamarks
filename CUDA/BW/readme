@@ -15,4 +15,27 @@ nvcc -O3  -o shmem      shmem.cu -arch=sm_20 -Xptxas=-v   -Xcompiler="-Wall" -DC
 for fp32 tests with CKSUM + SHFL
 nvcc -O3  -o shmem      shmem.cu -arch=sm_30 -Xptxas=-v   -Xcompiler="-Wall" -DCKSUM -DSM30
 
+Shared memory bandwidth for FERMI:
+32 bits/2 cycles/ bank  * 32 banks/SM * #SM * clock
+
+for GX680 is not clear for more, CUDA 5 manual says 64 bits/cycle, but measurements suggets 32 bits/cycle
+
+so for 
+Telsa C2050 @ 1.15 Ghz/14 SM
+shmemory BW = 2/bytes/cycle * 32 banks/SM * 14 SM * 1.15 GHz = 1030 GB/s
+
+GeForce GTX580 @ 1.54 Ghz/16 SM
+shmemory BW = 2/bytes/cycle * 32 banks/SM * 16 SM * 1.54 GHz = 1576 GB/s
+
+GeForce GTX680 @ 1.09 Ghz/8 SMX
+shmemory BW1 = 8/bytes/cycle * 32 banks/SMX * 8 SMX * 1.09 GHz = 2232 GB/s
+shmemory BW2 = 4/bytes/cycle * 32 banks/SMX * 8 SMX * 1.09 GHz = 1116 GB/s
+the BW2 is consistent with measurements, so either manual gives incorrect details,
+or is something I misunderstand how shmem works on GTX680
+
+Corollary:
+If application uses shared memory a lot, with little re-use of shared data, e.g. stream reads from shared memory,
+the application will run up to 50% faster on GTX580 even when fp64 is used!
+
+
 
