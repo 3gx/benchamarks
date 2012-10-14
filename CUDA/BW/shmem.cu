@@ -186,7 +186,7 @@ int main(int argc, char * argv[])
 
 
   std::vector<real> h0(n);
-  for (int i = 0; i < n; i++)
+  for (size_t i = 0; i < n; i++)
     h0[i] = drand48();
 
 #ifdef FP64

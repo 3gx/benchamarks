@@ -33,6 +33,31 @@ shmemory BW2 = 4/bytes/cycle * 32 banks/SMX * 8 SMX * 1.09 GHz = 1116 GB/s
 the BW2 is consistent with measurements, so either manual gives incorrect details,
 or is something I misunderstand how shmem works on GTX680
 
+upadte:
+on Kepler architecture, the 64 bits/cycle means that if float (32 bits) is read from shmem, 
+then only 32 bits out of 64 will be used, therefore delivering only 50% of bw.
+To test this hypothesis compile in the following way:
+
+nvcc -O3  -o shmem      shmem.cu -arch=sm_30 -Xptxas=-v   -Xcompiler="-Wall" -DCKSUM -DSM30
+nvcc -O3  -o shmem_opt  shmem.cu -arch=sm_30 -Xptxas=-v   -Xcompiler="-Wall" -DCKSUM -DSM30 -DFP32OPT
+
+on gtx680:
+./shmem 16
+ testing BW on 16 Melements
+ compute  REG - REG :  CKSUM=     621339437500   1706.57 GFLOP/s  rgstr bw: 6826.3 GB/s
+ compute SHMEM- REG :  CKSUM=     621339437500   497.987 GFLOP/s  shmem bw: 995.974 GB/s
+ compute  REG -SHMEM:  CKSUM=     621339437500   531.181 GFLOP/s  shmem bw: 1062.36 GB/s
+ compute  SHFL-SHFL :  CKSUM=     621339437500   1851.3 GFLOP/s
+ compute SHMEM-SHMEM:  CKSUM=     621339437500   280.253 GFLOP/s  shmem bw: 1121.01 GB/s
+
+./shmem_opt 16
+ testing BW on 16 Melements
+ compute  REG - REG :  CKSUM=     621339437500   1706.49 GFLOP/s  rgstr bw: 6825.96 GB/s
+ compute SHMEM- REG :  CKSUM=     621339437500   497.971 GFLOP/s  shmem bw: 995.942 GB/s
+ compute  REG -SHMEM:  CKSUM=     621339437500   522.175 GFLOP/s  shmem bw: 1044.35 GB/s
+ compute  SHFL-SHFL :  CKSUM=     621339437500   1851.18 GFLOP/s
+ compute SHMEM-SHMEM:  CKSUM=     621339437500   560.07 GFLOP/s  shmem bw: 2240.28 GB/s << 2x BW !!!
+
 Corollary:
 If application uses shared memory a lot, with little re-use of shared data, e.g. stream reads from shared memory,
 the application will run up to 50% faster on GTX580 even when fp64 is used!
