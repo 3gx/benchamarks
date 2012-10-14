@@ -11,7 +11,14 @@
 typedef double real;
 #else
 typedef float real;
+union float2x
+{
+  float2 x;
+  double y;
+};
+
 #endif
+
 
 #define WARP_SIZE2 5
 
@@ -46,6 +53,7 @@ __global__ void dev_compute(
 
   if (MODE <= 3)
   {
+
     real xd[M];
 #pragma unroll
     for (int i = 0; i < M; i++)
@@ -109,15 +117,37 @@ __global__ void dev_compute(
   }
   else
   {
+#if !defined FP64 && defined FP32OPT
+    volatile double *sxd2 = (double*)sxd;
+
+#pragma unroll
+    for (int i = 0; i < M; i++)
+    {
+#pragma unroll
+      for (int j = 0; j < M/2; j++)
+      {
+        const float x = sxd[i];
+        float2x tmp;
+        tmp.y = sxd2[j];
+        res += x*tmp.x.x;
+        res += x*tmp.x.y;
+      }
+    }
+#else
+
 #pragma unroll
     for (int i = 0; i < M; i++)
     {
 #pragma unroll
       for (int j = 0; j < M; j++)
-        res += sxd[j]*sxd[i];
+      {
+        res += sxd[i]*sxd[j];
+      }
     }
+#endif
+
   }
-  
+
 
   /* unlikely it will ever write result to RAM */
   if (tid < n)
