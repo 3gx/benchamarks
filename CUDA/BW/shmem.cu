@@ -103,8 +103,8 @@ __global__ void dev_compute(
           for (int j = 0; j < M; j++)
           {
 #ifdef SM30
-            const real xi = __shfl(x, i);
-            const real xj = __shfl(x, j);
+            const real xi = __shfl(x, i, 1<<WARP_SIZE2);
+            const real xj = __shfl(x, j, 1<<WARP_SIZE2);
 #else
             const real xi = sxd[i];
             const real xj = sxd[j];
