@@ -16,7 +16,6 @@ union float2x
   float2 x;
   double y;
 };
-
 #endif
 
 
@@ -121,16 +120,17 @@ __global__ void dev_compute(
     volatile double *sxd2 = (double*)sxd;
 
 #pragma unroll
-    for (int i = 0; i < M; i++)
+    for (int i = 0; i < M/2; i++)
     {
 #pragma unroll
       for (int j = 0; j < M/2; j++)
       {
-        const float x = sxd[i];
-        float2x tmp;
-        tmp.y = sxd2[j];
-        res += x*tmp.x.x;
-        res += x*tmp.x.y;
+        const double x = sxd2[i];
+        const double y = sxd2[j];
+        res += __int_as_float(__double2loint(x))*__int_as_float(__double2loint(y));
+        res += __int_as_float(__double2loint(x))*__int_as_float(__double2hiint(y));
+        res += __int_as_float(__double2hiint(x))*__int_as_float(__double2loint(y));
+        res += __int_as_float(__double2hiint(x))*__int_as_float(__double2hiint(y));
       }
     }
 #else
@@ -270,9 +270,15 @@ int main(int argc, char * argv[])
     CUDA_SAFE_CALL(cudaThreadSynchronize());
     const double dt =  rtc() - t0;
     cksum(d_out, h_data);
+#if !defined FP64 && defined FP32OPT
+    fprintf(stderr, " %g GFLOP/s  shmem bw: %g GB/s\n", 
+        n*M*M*2/dt/1e9,
+        2.0*n*M*M/4.0*sizeof(double)/dt/1e9);
+#else
     fprintf(stderr, " %g GFLOP/s  shmem bw: %g GB/s\n", 
         n*M*M*2/dt/1e9,
         2.0*n*M*M*sizeof(real)/dt/1e9);
+#endif
   }
 
 
