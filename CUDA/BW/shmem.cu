@@ -23,6 +23,7 @@ union float2x
 
 #define WARP_SIZE2 5
 
+
 dim3 grid(const int nt, const int n)
 {
   const int nb = (n-1)/nt + 1;
@@ -38,7 +39,7 @@ dim3 grid(const int nt, const int n)
 template<int M, int MODE>
 __global__ void dev_compute(
     const int   n,
-    const real *in,
+    const volatile real *in,
     __out real *out)
 {
   const int bid = blockIdx.y*gridDim.x + blockIdx.x;
@@ -46,7 +47,7 @@ __global__ void dev_compute(
 
   real res = real(0.0);
 
-  const int t0 = ((threadIdx.x >> WARP_SIZE2) << WARP_SIZE2) >> 1;
+  const int t0 = ((tid >> WARP_SIZE2) << WARP_SIZE2) >> 1;
   volatile __shared__ real sxd[M];
   if (threadIdx.x < M)
     sxd[threadIdx.x] = in[t0+threadIdx.x];
@@ -119,24 +120,30 @@ __global__ void dev_compute(
   else
   {
 #if !defined FP64 && defined FP32OPT
-    volatile double *sxd2 = (double*)sxd;
 
-#pragma unroll
+#if 1
+#ifdef GMEM
+    volatile double *sxd2 = (double*)(&in[bid*blockDim.x/2]);
+#else
+    volatile double *sxd2 = (double*)sxd;
+#endif
+
+#pragma unroll 
     for (int i = 0; i < M/2; i++)
     {
 #pragma unroll
       for (int j = 0; j < M/2; j++)
       {
+#if 0
         const double x = sxd2[i];
         const double y = sxd2[j];
-#if 1  /* compile with sm_30 to get performance */
         res += __int_as_float(__double2loint(x))*__int_as_float(__double2loint(y));
         res += __int_as_float(__double2loint(x))*__int_as_float(__double2hiint(y));
         res += __int_as_float(__double2hiint(x))*__int_as_float(__double2loint(y));
         res += __int_as_float(__double2hiint(x))*__int_as_float(__double2hiint(y));
 #else
-        const float2x xi(x);
-        const float2x xj(y);
+        const float2x xi(sxd2[i]);
+        const float2x xj(sxd2[j]);
         res += xi.flt.x * xj.flt.x;
         res += xi.flt.x * xj.flt.y;
         res += xi.flt.y * xj.flt.x;
@@ -144,8 +151,15 @@ __global__ void dev_compute(
 #endif
       }
     }
+#endif
 
-#else  /* naive, delivers only half of shmem bw here and quarter of performance... */
+#else
+
+#ifdef GMEM
+    volatile float *sxd2 = (float*)(&in[bid*blockDim.x/2]);
+#else
+    volatile float *sxd2 = (float*)sxd;
+#endif
 
 #pragma unroll
     for (int i = 0; i < M; i++)
@@ -153,7 +167,7 @@ __global__ void dev_compute(
 #pragma unroll
       for (int j = 0; j < M; j++)
       {
-        res += sxd[i]*sxd[j];
+        res += sxd2[i]*sxd2[j];
       }
     }
 #endif
@@ -206,6 +220,7 @@ int main(int argc, char * argv[])
 #else
   const int M = 32;
 #endif
+#if 1
   {
     fprintf(stderr, " compute  REG - REG : ");
     for (size_t i = 0; i < n; i++)
@@ -270,14 +285,20 @@ int main(int argc, char * argv[])
     fprintf(stderr, " %g GFLOP/s\n", n*M*M*2/dt/1e9);
   }
 #endif
+#endif
   {
+#ifdef GMEM
+    fprintf(stderr, " compute  GMEM- GMEM: ");
+#else
     fprintf(stderr, " compute SHMEM-SHMEM: ");
+#endif
     for (size_t i = 0; i < n; i++)
       h_data[i] = h0[i];
     d_in.h2d(h_data);
 
     const double t0 = rtc();
     const int NTHREADS = 256;
+    CUDA_SAFE_CALL(cudaFuncSetCacheConfig(dev_compute<M,255>, cudaFuncCachePreferL1));
     dev_compute<M,255><<<grid(NTHREADS,n), NTHREADS>>>(n, d_in, d_out);
     CUDA_SAFE_CALL(cudaThreadSynchronize());
     const double dt =  rtc() - t0;
