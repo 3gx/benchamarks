@@ -13,8 +13,10 @@ typedef double real;
 typedef float real;
 union float2x
 {
-  float2 x;
-  double y;
+  float2 flt;
+  double dbl;
+  __device__ float2x (const double x) : dbl(x) {}
+  __device__ operator float2 () const { return flt; }
 };
 #endif
 
@@ -127,13 +129,23 @@ __global__ void dev_compute(
       {
         const double x = sxd2[i];
         const double y = sxd2[j];
+#if 1  /* compile with sm_30 to get performance */
         res += __int_as_float(__double2loint(x))*__int_as_float(__double2loint(y));
         res += __int_as_float(__double2loint(x))*__int_as_float(__double2hiint(y));
         res += __int_as_float(__double2hiint(x))*__int_as_float(__double2loint(y));
         res += __int_as_float(__double2hiint(x))*__int_as_float(__double2hiint(y));
+#else
+        const float2x xi(x);
+        const float2x xj(y);
+        res += xi.flt.x * xj.flt.x;
+        res += xi.flt.x * xj.flt.y;
+        res += xi.flt.y * xj.flt.x;
+        res += xi.flt.y * xj.flt.y;
+#endif
       }
     }
-#else
+
+#else  /* naive, delivers only half of shmem bw here and quarter of performance... */
 
 #pragma unroll
     for (int i = 0; i < M; i++)
