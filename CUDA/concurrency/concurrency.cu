@@ -64,22 +64,36 @@ int main(int argc, char * argv[])
   const int nloop = nMloop * 1024;
 
 
-#if 1
-  typedef float  real;
-#else
-  typedef double real;
-#endif
 
-  cuda_mem<real> d_in, d_out;
-
-  d_in .realloc(NTHREADS_MAX);
-  d_out.realloc(NTHREADS_MAX);
-
-  const int nblocks = 10240;
-
-  for (int i = 1; i <= 32; i <<= 1)
+  
   {
-    run_test(i, nblocks, nloop, d_in, d_out);
+    fprintf(stderr, " --- fp32 ---  \n");
+    cuda_mem<float> d_in, d_out;
+
+    d_in .realloc(NTHREADS_MAX);
+    d_out.realloc(NTHREADS_MAX);
+
+    const int nblocks = 10240;
+
+    for (int i = 1; i <= 32; i <<= 1)
+    {
+      run_test(i, nblocks, nloop, d_in, d_out);
+    }
+  }
+  
+  {
+    fprintf(stderr, " --- fp64 ---  \n");
+    cuda_mem<double> d_in, d_out;
+
+    d_in .realloc(NTHREADS_MAX);
+    d_out.realloc(NTHREADS_MAX);
+
+    const int nblocks = 10240;
+
+    for (int i = 1; i <= 32; i <<= 1)
+    {
+      run_test(i, nblocks, nloop, d_in, d_out);
+    }
   }
 
 
