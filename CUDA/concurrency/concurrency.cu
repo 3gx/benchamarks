@@ -64,6 +64,7 @@ int main(int argc, char * argv[])
   const int nloop = nMloop * 1024;
 
 
+  const int nblocks = 10240;
 
   
   {
@@ -73,7 +74,6 @@ int main(int argc, char * argv[])
     d_in .realloc(NTHREADS_MAX);
     d_out.realloc(NTHREADS_MAX);
 
-    const int nblocks = 10240;
 
     for (int i = 1; i <= 32; i <<= 1)
     {
@@ -87,8 +87,6 @@ int main(int argc, char * argv[])
 
     d_in .realloc(NTHREADS_MAX);
     d_out.realloc(NTHREADS_MAX);
-
-    const int nblocks = 10240;
 
     for (int i = 1; i <= 32; i <<= 1)
     {
