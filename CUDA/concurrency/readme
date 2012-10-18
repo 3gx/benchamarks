@@ -1,0 +1,5 @@
+#benchmark attemps to measure warp concurrency..
+
+ nvcc -O3 -o concurrency concurrency.cu -arch=sm_20 -Xptxas=-v
+
+
