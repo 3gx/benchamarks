@@ -12,7 +12,7 @@
 
 #define ILP 8
 
-static __constant__ int warpMap[WARP_SIZE];
+static __constant__ int warpSwitchOff[WARP_SIZE];
 
 
 template<typename REAL>
@@ -24,8 +24,8 @@ __global__ void dev_compute(
     const REAL *in_c)
 {
   const int tid = threadIdx.x;
-  const int warpId = warpMap[tid / WARP_SIZE];
-  if (warpId >= nwarps) return;
+//  if (tid/WARP_SIZE >= nwarps) return;
+  if (!warpSwitchOff[tid / WARP_SIZE]) return;
 
   REAL       a[ILP] = {in_a[tid]};
   const REAL b      =  in_b[tid];
@@ -53,10 +53,25 @@ __global__ void dev_compute(
 }
 
   template<typename T>
-void run_test(const int nwarps, const int nblocks, const int n, const cuda_mem<T> &in, cuda_mem<T> &out)
+void run_test(const int nwarps, const int warpStride, const int nblocks, const int n, const cuda_mem<T> &in, cuda_mem<T> &out)
 {
   assert(nwarps > 0);
   assert(nblocks > 0);
+  
+  int warpMap_host[WARP_SIZE] = {0};
+  int warpId = 0;
+  int offset = 0;
+  for (int i = 0; i < nwarps; i++)
+  {
+    warpMap_host[warpId + offset] = 1;
+    warpId += warpStride;
+    if (warpId >= WARP_SIZE)
+    {
+      offset++;
+      warpId -= WARP_SIZE;
+    }
+  }
+  CUDA_SAFE_CALL(cudaMemcpyToSymbol("warpSwitchOff", warpMap_host, WARP_SIZE*sizeof(int)));
 
   const dim3 grid(nblocks);
   const dim3 blocks(NTHREADS_MAX);
@@ -84,26 +99,25 @@ int main(int argc, char * argv[])
   const int warpStride = argc > 2 ? atoi(argv[2]) : 1;
   fprintf(stderr, " testing warp-stride of %d \n", warpStride);
 
-  const int flag = argc > 3;
+  assert(warpStride > 0);
 
-
-  static int warpMap_host[WARP_SIZE];
   int warpId = 0;
   int offset = 0;
   fprintf(stderr, " Warp scheduling order:  \n  ");
   for (int i = 0; i < WARP_SIZE; i++)
+    fprintf(stderr, "%2d  ", i);
+  fprintf(stderr, " \n  ");
+  for (int i = 0; i < WARP_SIZE; i++)
   {
-    warpMap_host[i] = warpId + offset;
+    fprintf(stderr, "%2d  ", warpId + offset);
     warpId += warpStride;
     if (warpId >= WARP_SIZE)
     {
-       offset += flag;
-       warpId -= WARP_SIZE;
+      offset++;
+      warpId -= WARP_SIZE;
     }
-    fprintf(stderr, "%d ", warpMap_host[i]);
   }
   fprintf(stderr, " \n");
-  CUDA_SAFE_CALL(cudaMemcpyToSymbol("warpMap", warpMap_host, WARP_SIZE*sizeof(int)));
 
 
   const int nblocks = 1;
@@ -119,7 +133,7 @@ int main(int argc, char * argv[])
 
     for (int i = 1; i <= NTHREADS_MAX/WARP_SIZE; i++)
     {
-      run_test(i, nblocks, nloop, d_in, d_out);
+      run_test(i, warpStride, nblocks, nloop, d_in, d_out);
     }
   }
 
@@ -132,7 +146,7 @@ int main(int argc, char * argv[])
 
     for (int i = 1; i <= NTHREADS_MAX/WARP_SIZE; i++)
     {
-      run_test(i, nblocks, nloop, d_in, d_out);
+      run_test(i, warpStride, nblocks, nloop, d_in, d_out);
     }
   }
 
