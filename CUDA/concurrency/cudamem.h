@@ -44,10 +44,6 @@ struct cuda_mem
   {
     return ptr;
   }
-  operator const T* () const
-  {
-    return ptr;
-  }
 };
 
 /* simple PINNED host memory management */
