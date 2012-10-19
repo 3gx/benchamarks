@@ -12,7 +12,7 @@
 
 #define ILP 8
 
-static __constant__ int warpSwitchOff[WARP_SIZE];
+static __constant__ int warpSwitchOff[NTHREADS_MAX/WARP_SIZE];
 
 
 template<typename REAL>
@@ -65,7 +65,7 @@ void run_test(const int nwarps, const int warpStride, const int nblocks, const i
   {
     warpMap_host[warpId + offset] = 1;
     warpId += warpStride;
-    if (warpId >= WARP_SIZE)
+    if (warpId + offset >= WARP_SIZE)
     {
       offset++;
       warpId -= WARP_SIZE;
@@ -111,7 +111,7 @@ int main(int argc, char * argv[])
   {
     fprintf(stderr, "%2d  ", warpId + offset);
     warpId += warpStride;
-    if (warpId >= WARP_SIZE)
+    if (warpId + offset >= WARP_SIZE)
     {
       offset++;
       warpId -= WARP_SIZE;
