@@ -21,7 +21,7 @@
 #define ILP 8
 #endif
 
-static __constant__ int warpSwitchOn[NTHREADS_MAX/WARP_SIZE];
+static __constant__ int warpSwitchOn[NWARPS];
 
 
 template<typename REAL>
@@ -104,12 +104,14 @@ int main(int argc, char * argv[])
   std::vector<int> warpList(NWARPS);
 
   fprintf(stderr, " Warp scheduling order:  \n  ");
-  for (int i = 0; i < WARP_SIZE; i++)
+  for (int i = 0; i < NWARPS; i++)
     fprintf(stderr, "%2d  ", i);
   fprintf(stderr, " \n  ");
-  for (int i = 0; i < WARP_SIZE; i++)
+  for (int i = 0; i < NWARPS; i++)
   {
-    warpList[i] = (i*warpStride) & (WARP_SIZE-1);
+    warpList[i] = i * warpStride;
+    while (warpList[i] >= NWARPS)
+      warpList[i] = (warpList[i] % NWARPS) + (warpList[i]/NWARPS);
     fprintf(stderr, "%2d  ", warpList[i]);
   }
   fprintf(stderr, " \n");
