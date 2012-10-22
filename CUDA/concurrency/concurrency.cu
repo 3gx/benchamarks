@@ -69,7 +69,7 @@ void run_test(const int nwarps, const std::vector<int> &warpList, const int nblo
   int warpSwitchOn_host[NWARPS] = {0};
   for (int i = 0; i < nwarps; i++)
     warpSwitchOn_host[warpList[i]] = 1;
-  CUDA_SAFE_CALL(cudaMemcpyToSymbol("warpSwitchOn", warpSwitchOn_host, NWARPS*sizeof(int)));
+  CUDA_SAFE_CALL(cudaMemcpyToSymbol(warpSwitchOn, warpSwitchOn_host, NWARPS*sizeof(int)));
 
   const dim3 grid(nblocks);
   const dim3 blocks(NTHREADS_MAX);
