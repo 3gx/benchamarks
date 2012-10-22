@@ -7,12 +7,21 @@
 
 #define __out
 
+#ifndef NTHREADS_MAX
 #define NTHREADS_MAX 1024
+#endif
+
+#ifndef WARP_SIZE
 #define WARP_SIZE 32
+#endif
 
+#define NWARPS (NTHREADS_MAX/WARP_SIZE)
+
+#ifndef ILP
 #define ILP 8
+#endif
 
-static __constant__ int warpSwitchOff[NTHREADS_MAX/WARP_SIZE];
+static __constant__ int warpSwitchOn[NTHREADS_MAX/WARP_SIZE];
 
 
 template<typename REAL>
@@ -24,8 +33,7 @@ __global__ void dev_compute(
     const REAL *in_c)
 {
   const int tid = threadIdx.x;
-//  if (tid/WARP_SIZE >= nwarps) return;
-  if (!warpSwitchOff[tid / WARP_SIZE]) return;
+  if (!warpSwitchOn[tid / WARP_SIZE]) return;
 
   REAL       a[ILP] = {in_a[tid]};
   const REAL b      =  in_b[tid];
@@ -53,25 +61,15 @@ __global__ void dev_compute(
 }
 
   template<typename T>
-void run_test(const int nwarps, const int warpStride, const int nblocks, const int n, const cuda_mem<T> &in, cuda_mem<T> &out)
+void run_test(const int nwarps, const std::vector<int> &warpList, const int nblocks, const int n, const cuda_mem<T> &in, cuda_mem<T> &out)
 {
   assert(nwarps > 0);
   assert(nblocks > 0);
   
-  int warpMap_host[WARP_SIZE] = {0};
-  int warpId = 0;
-  int offset = 0;
+  int warpSwitchOn_host[NWARPS] = {0};
   for (int i = 0; i < nwarps; i++)
-  {
-    warpMap_host[warpId + offset] = 1;
-    warpId += warpStride;
-    if (warpId + offset >= WARP_SIZE)
-    {
-      offset++;
-      warpId -= WARP_SIZE;
-    }
-  }
-  CUDA_SAFE_CALL(cudaMemcpyToSymbol("warpSwitchOff", warpMap_host, WARP_SIZE*sizeof(int)));
+    warpSwitchOn_host[warpList[i]] = 1;
+  CUDA_SAFE_CALL(cudaMemcpyToSymbol("warpSwitchOn", warpSwitchOn_host, NWARPS*sizeof(int)));
 
   const dim3 grid(nblocks);
   const dim3 blocks(NTHREADS_MAX);
@@ -91,6 +89,8 @@ void run_test(const int nwarps, const int warpStride, const int nblocks, const i
 
 int main(int argc, char * argv[])
 {
+  assert( WARP_SIZE > 0);
+  assert((WARP_SIZE & (WARP_SIZE-1)) == 0);
   const int nMloop = argc > 1 ? atoi(argv[1]) : 1;
   fprintf(stderr, " testing concurrency on %llu Melements\n", (unsigned long long)nMloop);
 
@@ -101,26 +101,25 @@ int main(int argc, char * argv[])
 
   assert(warpStride > 0);
 
-  int warpId = 0;
-  int offset = 0;
+  std::vector<int> warpList(NWARPS);
+
   fprintf(stderr, " Warp scheduling order:  \n  ");
   for (int i = 0; i < WARP_SIZE; i++)
     fprintf(stderr, "%2d  ", i);
   fprintf(stderr, " \n  ");
   for (int i = 0; i < WARP_SIZE; i++)
   {
-    fprintf(stderr, "%2d  ", warpId + offset);
-    warpId += warpStride;
-    if (warpId + offset >= WARP_SIZE)
-    {
-      offset++;
-      warpId -= WARP_SIZE;
-    }
+    warpList[i] = (i*warpStride) & (WARP_SIZE-1);
+    fprintf(stderr, "%2d  ", warpList[i]);
   }
   fprintf(stderr, " \n");
 
 
+#if 0
+  const int nblocks = 10240;
+#else
   const int nblocks = 1;
+#endif
 
 
   {
@@ -131,26 +130,24 @@ int main(int argc, char * argv[])
     d_out.realloc(NTHREADS_MAX);
 
 
-    for (int i = 1; i <= NTHREADS_MAX/WARP_SIZE; i++)
+    for (int i = 1; i <= NWARPS; i++)
     {
-      run_test(i, warpStride, nblocks, nloop, d_in, d_out);
+      run_test(i, warpList, nblocks, nloop, d_in, d_out);
     }
   }
-
+  
   {
-    fprintf(stderr, " --- fp64 ---  \n");
+    fprintf(stderr, " --- double ---  \n");
     cuda_mem<double> d_in, d_out;
 
     d_in .realloc(NTHREADS_MAX);
     d_out.realloc(NTHREADS_MAX);
 
-    for (int i = 1; i <= NTHREADS_MAX/WARP_SIZE; i++)
+    for (int i = 1; i <= NWARPS; i++)
     {
-      run_test(i, warpStride, nblocks, nloop, d_in, d_out);
+      run_test(i, warpList, nblocks, nloop, d_in, d_out);
     }
   }
-
-
 
   return 0;
 }
