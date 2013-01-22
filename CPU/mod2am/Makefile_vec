@@ -1,0 +1,33 @@
+#
+# Makefile for program mod2am of the EuroBen Benchmark Version 5.1.
+
+SHELL   = /bin/sh
+FC      = mpiifort
+FFLAGS  = -O3 -openmp -xHost -vec-report -g -132 -fpp 
+CFLAGS  =
+INCS    =
+LD      = ${FC}
+LDFLAGS = ${FFLAGS}
+LIBS    =
+#
+# --- Makefile for dense matrix-matrix product (hybrid OpenMP/MPI version).
+
+OBJECTS = mpimod.o numerics.o mod2am.o check.o gendat.o gmxm.o mxm.o \
+          state.o
+
+EXEC    = x.mod2am_vec
+
+${EXEC}: ${OBJECTS}
+	@echo
+	${LD} ${LDFLAGS} -o ${EXEC} ${OBJECTS} ${LIBS}
+
+.SUFFIXES:	 .f .o
+.f.o	:
+	@echo
+	${FC} ${FFLAGS} ${INCS} -c $<
+
+clean	:
+	/bin/rm -f ${OBJECTS}  *.mod ${EXEC}
+
+veryclean:
+	/bin/rm -f ${OBJECTS}  *.mod ${EXEC}

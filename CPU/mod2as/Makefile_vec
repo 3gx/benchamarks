@@ -1,0 +1,36 @@
+FC      = mpiifort
+FFLAGS  = -O3 -xHost -vec-report1 -132 -fpp  
+# FFLAGS += -openmp
+INCS    = 
+LD      = ${FC}
+LDFLAGS = ${FFLAGS}
+LIBS    = 
+
+#
+# Makefile for program parallel sparse matrix-vector multiply (MPI version).
+
+OBJECTS   = numerics.o distmod.o   ranmod.o mod2as.o check.o  csetup.o        \
+            dran0.o    getmatvec.o iqsort.o part.o   ranfil.o rinit.o spmxv.o \
+            state.o
+
+ifeq ($(OMP), 1)
+	FFLAGS += -openmp
+	EXEC = x.mod2as_vec_openmp
+else
+	EXEC = x.mod2as_vec
+endif
+
+${EXEC}: ${OBJECTS} 
+	@echo
+	${LD} ${LDFLAGS} -o ${EXEC} ${OBJECTS} ${LIBS}
+
+.SUFFIXES:	 .f .o
+.f.o	:
+	@echo
+	${FC} ${FFLAGS} -c $*.f ${INCS}
+
+clean	:
+	/bin/rm -f ${OBJECTS} *.mod ${EXEC}
+
+veryclean:
+	/bin/rm -f ${OBJECTS} *.mod ${EXEC}

@@ -1,0 +1,2 @@
+icpc -O3 -o jacobi2d jacobi2d.cpp -vec-report -openmp -restrict -xHost
+icpc -O3 -o jacobi3d jacobi3d.cpp -vec-report -openmp -restrict -xHost -g

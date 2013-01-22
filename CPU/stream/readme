@@ -1,0 +1,1 @@
+icc -O3 -o stream stream.c -openmp -xHost -vec-report

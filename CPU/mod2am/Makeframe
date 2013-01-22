@@ -1,0 +1,22 @@
+#
+# --- Makefile for dense matrix-matrix product (hybrid OpenMP/MPI version).
+
+OBJECTS = mpimod.o numerics.o mod2am.o check.o gendat.o gmxm.o mxm.o \
+          state.o
+
+EXEC    = x.mod2am
+
+${EXEC}: ${OBJECTS}
+	@echo
+	${LD} ${LDFLAGS} -o ${EXEC} ${OBJECTS} ${LIBS}
+
+.SUFFIXES:	 .f .o
+.f.o	:
+	@echo
+	${FC} ${FFLAGS} ${INCS} -c $<
+
+clean	:
+	/bin/rm -f ${OBJECTS}  *.mod
+
+veryclean:
+	/bin/rm -f ${OBJECTS}  *.mod ${EXEC}
