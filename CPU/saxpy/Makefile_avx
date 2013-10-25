@@ -1,29 +1,28 @@
 CXX=icpc  -openmp
-CXXFLAGS= -O3 -xavx -g
+CXXFLAGS= -O3 -xavx 
 
 ISPC=ispc
 ISPCFLAGS =  -O3 --target=avx1-i32x8 
 ISPCFLAGS+= --opt=force-aligned-memory
 
 ARCH=avx
-all: saxpy_$(ARCH) $(ARCH)/saxpy_ispc.s
+all: $(ARCH)/saxpy_ispc.s saxpy_$(ARCH)
 
-saxpy_$(ARCH): $(ARCH)/saxpy_ispc.o saxpy.cpp
-	$(CXX) $(CXXFLAGS)  -o $@ $^
+saxpy_$(ARCH): $(ARCH)/saxpy_ispc.o saxpy.cpp params.h
+	$(CXX) $(CXXFLAGS)  -o $@ $^ -g
 
-$(ARCH)/saxpy_ispc.o: saxpy.ispc
-	mkdir -p $(ARCH)
-	$(ISPC) $(ISPCFLAGS)  -o $@ $<
+$(ARCH)/saxpy_ispc.o: $(ARCH)/saxpy_ispc.s
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-$(ARCH)/saxpy_ispc.s: saxpy.ispc
+$(ARCH)/saxpy_ispc.s: saxpy.ispc params.h
 	mkdir -p $(ARCH)
 	$(ISPC) $(ISPCFLAGS) --emit-asm  -o $@ $<
 
-run_compact: saxpy_$(ARCH)
-	KMP_AFFINITY=compact ./saxpy_$(ARCH) 1024000 2
+run_compact: all
+	KMP_AFFINITY=compact ./saxpy_$(ARCH) 10240 2
 
-run_scatter: saxpy_$(ARCH)
-	KMP_AFFINITY=scatter ./saxpy_$(ARCH) 1024000 2
+run_scatter: all
+	KMP_AFFINITY=scatter ./saxpy_$(ARCH) 10240 2
 
 clean:
 	/bin/rm -rf saxpy_$(ARCH)  $(ARCH)

@@ -1,2 +1,2 @@
 #define real float
-#define N 1024
+#define N 65536

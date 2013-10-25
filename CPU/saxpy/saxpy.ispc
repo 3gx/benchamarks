@@ -3,53 +3,58 @@ export void  saxpy(
   const uniform real a,
   const uniform real x[], 
   const uniform real y[],
-  uniform real z[])
+  uniform real z[],
+  uniform int n_out[])
 {
+  uniform int i = 0;
+
 #if 1
-  for (uniform int ib = 0; ib < N; ib += programCount*16)
-  {
-    {
-      const int i0 = ib + programIndex;
-      const int i1 = i0 + programCount;
-      const int i2 = i1 + programCount;
-      const int i3 = i2 + programCount;
-      const int i4 = i3 + programCount;
-      const int i5 = i4 + programCount;
-      const int i6 = i5 + programCount;
-      const int i7 = i6 + programCount;
-      z[i0] = a*x[i0] + y[i0];
-      z[i1] = a*x[i1] + y[i1];
-      z[i2] = a*x[i2] + y[i2];
-      z[i3] = a*x[i3] + y[i3];
-      z[i4] = a*x[i4] + y[i4];
-      z[i5] = a*x[i5] + y[i5];
-      z[i6] = a*x[i6] + y[i6];
-      z[i7] = a*x[i7] + y[i7];
-    }
-    {
-      const int i0 = ib + programIndex + 8*programCount;
-      const int i1 = i0 + programCount;
-      const int i2 = i1 + programCount;
-      const int i3 = i2 + programCount;
-      const int i4 = i3 + programCount;
-      const int i5 = i4 + programCount;
-      const int i6 = i5 + programCount;
-      const int i7 = i6 + programCount;
-      z[i0] = a*x[i0] + y[i0];
-      z[i1] = a*x[i1] + y[i1];
-      z[i2] = a*x[i2] + y[i2];
-      z[i3] = a*x[i3] + y[i3];
-      z[i4] = a*x[i4] + y[i4];
-      z[i5] = a*x[i5] + y[i5];
-      z[i6] = a*x[i6] + y[i6];
-      z[i7] = a*x[i7] + y[i7];
-    }
-  }
+#define Y z
 #else
-  foreach(i = 0 ... N)
-  {
-    z[i] = a*x[i] + y[i];
-  }
+#define Y y  /* this doesn't use non-temporal store, so results are skewed */
 #endif
+
+#define compute \
+  z[shift( 0)] = a*x[shift( 0)] + Y[shift( 0)]; \
+  z[shift( 1)] = a*x[shift( 1)] + Y[shift( 1)]; \
+  z[shift( 2)] = a*x[shift( 2)] + Y[shift( 2)]; \
+  z[shift( 3)] = a*x[shift( 3)] + Y[shift( 3)]; \
+  z[shift( 4)] = a*x[shift( 4)] + Y[shift( 4)]; \
+  z[shift( 5)] = a*x[shift( 5)] + Y[shift( 5)]; \
+  z[shift( 6)] = a*x[shift( 6)] + Y[shift( 6)]; \
+  z[shift( 7)] = a*x[shift( 7)] + Y[shift( 7)]; \
+  z[shift( 8)] = a*x[shift( 8)] + Y[shift( 8)]; \
+  z[shift( 9)] = a*x[shift( 9)] + Y[shift( 9)]; \
+  z[shift(10)] = a*x[shift(10)] + Y[shift(10)]; \
+  z[shift(11)] = a*x[shift(11)] + Y[shift(11)]; \
+  z[shift(12)] = a*x[shift(12)] + Y[shift(12)]; \
+  z[shift(13)] = a*x[shift(13)] + Y[shift(13)]; \
+  z[shift(14)] = a*x[shift(14)] + Y[shift(14)]; \
+  z[shift(15)] = a*x[shift(15)] + Y[shift(15)]; 
+
+#define shift(n) ((n+ 0)*programCount + programIndex)
+  compute;
+  i++;
+#undef shift
+
+#define shift(n) ((n+16)*programCount + programIndex)
+  compute;
+  i++;
+#undef shift
+
+#define shift(n) ((n+32)*programCount + programIndex)
+  compute;
+  i++;
+#undef shift
+
+#define shift(n) ((n+48)*programCount + programIndex)
+  compute;
+  i++;
+#undef shift
+
+  *n_out = (programCount*16)*i;
+
+#undef Y
 }
+
 

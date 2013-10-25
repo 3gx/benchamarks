@@ -6,7 +6,7 @@
 
 #include <sys/time.h>
 
-extern "C" void saxpy(real, real*,real*,real*);
+extern "C" void saxpy(real, real*,real*,real*,int*);
 
 static double rtc(void)
 {
@@ -24,6 +24,8 @@ static double rtc(void)
 
 int main(int argc, char * argv[])
 {
+  fprintf(stderr, " N= %d\n", N);
+
   const int rep = argc > 1 ? atoi(argv[1]) : 1024;
   fprintf(stderr, " rep= %d\n", rep);
   
@@ -49,24 +51,31 @@ int main(int argc, char * argv[])
       z[i] = drand48();
     }
 
-    saxpy(a,x,y,z);
-    saxpy(a,x,y,z);
-    saxpy(a,x,y,z);
+    int n;
+    saxpy(a,x,y,z,&n);
+    saxpy(a,x,y,z,&n);
+    saxpy(a,x,y,z,&n);
+
+#pragma omp master
+    {
+      fprintf(stderr, " --- used %d KB of memory per array --- \n",
+          n*sizeof(real)*nthreads);
+    }
 
 
 #pragma omp barrier
     const double t0 = rtc();
     for (int r = 0; r < rep; r++)
     {
-      saxpy(a,x,y,z);
+      saxpy(a,x,y,z,&n);
     }
     const double t1 = rtc();
 #pragma omp barrier
 
     const double dt = t1-t0;
 
-    const double flops = 2.0*rep*N;
-    const double bytes = 3.0*sizeof(real)*N*rep;
+    const double flops = 2.0*rep*n;
+    const double bytes = 3.0*sizeof(real)*n*rep;
 
 #pragma omp critical
     {
