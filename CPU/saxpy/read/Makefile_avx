@@ -16,7 +16,7 @@ $(ARCH)/read_ispc.o: $(ARCH)/read_ispc.s
 
 $(ARCH)/read_ispc.s: read.ispc params.h
 	mkdir -p $(ARCH)
-	$(ISPC) $(ISPCFLAGS) --emit-asm  -o $@ $<
+	if [ -f read_ispc_avx.s ]; then cp read_ispc_avx.s $@; else $(ISPC) $(ISPCFLAGS) --emit-asm  -o $@ $<; fi
 
 run_compact: all
 	KMP_AFFINITY=compact ./read_$(ARCH) 1024000 1
