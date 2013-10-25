@@ -18,7 +18,7 @@ export void  saxpy(
 
 #if 1
 #define SAXPY
-#elif 0 /* don't forget that in saxpy.ispc we multiple N*3, thus the result must be scaled by 2.0/3.0 */
+#elif 1 /* don't forget that in saxpy.ispc we multiple N*3, thus the result must be scaled by 2.0/3.0 */
 #define CACHEREPLACE
 #else  /* don't forget that in saxpy.ispc we multiple N*3, thus the result must be scaled by 2.0/3.0 */
 #define COPYMUL
