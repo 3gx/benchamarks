@@ -14,6 +14,8 @@ export void  saxpy(
 #define Y y  /* this doesn't use non-temporal store, so results are skewed */
 #endif
 
+#define NLOOP 64
+
 #define compute \
   z[shift( 0)] = a*x[shift( 0)] + Y[shift( 0)]; \
   z[shift( 1)] = a*x[shift( 1)] + Y[shift( 1)]; \
@@ -37,11 +39,14 @@ export void  saxpy(
   i++;
 #undef shift
 
+#if NLOOP > 16
 #define shift(n) ((n+16)*programCount + programIndex)
   compute;
   i++;
 #undef shift
+#endif
 
+#if NLOOP > 32
 #define shift(n) ((n+32)*programCount + programIndex)
   compute;
   i++;
@@ -51,6 +56,30 @@ export void  saxpy(
   compute;
   i++;
 #undef shift
+#endif
+
+#if NLOOP > 64
+#define shift(n) ((n+64)*programCount + programIndex)
+  compute;
+  i++;
+#undef shift
+
+#define shift(n) ((n+80)*programCount + programIndex)
+  compute;
+  i++;
+#undef shift
+
+#define shift(n) ((n+96)*programCount + programIndex)
+  compute;
+  i++;
+#undef shift
+
+#define shift(n) ((n+112)*programCount + programIndex)
+  compute;
+  i++;
+#undef shift
+#endif
+
 
   *n_out = (programCount*16)*i;
 

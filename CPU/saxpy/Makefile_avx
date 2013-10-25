@@ -19,10 +19,14 @@ $(ARCH)/saxpy_ispc.s: saxpy.ispc params.h
 	$(ISPC) $(ISPCFLAGS) --emit-asm  -o $@ $<
 
 run_compact: all
-	KMP_AFFINITY=compact ./saxpy_$(ARCH) 10240 2
+	KMP_AFFINITY=compact ./saxpy_$(ARCH) 1024000 1
+	KMP_AFFINITY=compact ./saxpy_$(ARCH) 1024000 2
+	KMP_AFFINITY=compact ./saxpy_$(ARCH) 1024000 4
 
 run_scatter: all
-	KMP_AFFINITY=scatter ./saxpy_$(ARCH) 10240 2
+	KMP_AFFINITY=scatter ./saxpy_$(ARCH) 1024000 1
+	KMP_AFFINITY=scatter ./saxpy_$(ARCH) 1024000 2
+	KMP_AFFINITY=scatter ./saxpy_$(ARCH) 1024000 4
 
 clean:
 	/bin/rm -rf saxpy_$(ARCH)  $(ARCH)
