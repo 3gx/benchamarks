@@ -16,7 +16,7 @@ $(ARCH)/copy_ispc.o: $(ARCH)/copy_ispc.s
 
 $(ARCH)/copy_ispc.s: copy.ispc params.h
 	mkdir -p $(ARCH)
-	$(ISPC) $(ISPCFLAGS) --emit-asm  -o $@ $<
+	if [ -f copy_ispc_avx.s ]; then cp copy_ispc_avx.s $@; else $(ISPC) $(ISPCFLAGS) --emit-asm  -o $@ $<; fi
 
 run_compact: all
 	KMP_AFFINITY=compact ./copy_$(ARCH) 1024000 1

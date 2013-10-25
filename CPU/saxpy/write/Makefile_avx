@@ -16,7 +16,7 @@ $(ARCH)/write_ispc.o: $(ARCH)/write_ispc.s
 
 $(ARCH)/write_ispc.s: write.ispc params.h
 	mkdir -p $(ARCH)
-	if [ -f read_ispc_avx.s ]; then cp read_ispc_avx.s $@; else $(ISPC) $(ISPCFLAGS) --emit-asm  -o $@ $<; fi
+	if [ -f write_ispc_avx.s ]; then cp write_ispc_avx.s $@; else $(ISPC) $(ISPCFLAGS) --emit-asm  -o $@ $<; fi
 
 run_compact: all
 	KMP_AFFINITY=compact ./write_$(ARCH) 1024000 1
