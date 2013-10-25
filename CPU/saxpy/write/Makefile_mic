@@ -16,7 +16,7 @@ $(ARCH)/write_ispc.o: $(ARCH)/write_ispc.s
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 $(ARCH)/write_ispc.s: $(ARCH)/write_ispc.zmm.cpp
-	$(CXX) $(CXXFLAGS) -S -o $@ $<
+	if [ -f write_ispc_mic.s ]; then cp write_ispc_mic.s $@; else 	$(CXX) $(CXXFLAGS) -S -o $@ $<; fi
 
 $(ARCH)/write_ispc.zmm.cpp: write.ispc params.h
 	mkdir -p $(ARCH)

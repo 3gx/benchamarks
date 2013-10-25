@@ -56,6 +56,7 @@ int main(int argc, char * argv[])
 #pragma omp master
     {
 #ifndef __MIC__
+      /* mic uses hacked-assembly directly, so this number is irrelevant */
       fprintf(stderr, " --- used %d KB of memory per array --- \n",
           n*sizeof(real)*nthreads);
 #endif

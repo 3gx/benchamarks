@@ -16,6 +16,7 @@ $(ARCH)/copy_ispc.o: $(ARCH)/copy_ispc.s
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 $(ARCH)/copy_ispc.s: $(ARCH)/copy_ispc.zmm.cpp
+	if [ -f copy_ispc_mic.s ]; then cp copy_ispc_mic.s $@; else 	$(CXX) $(CXXFLAGS) -S -o $@ $<; fi
 	$(CXX) $(CXXFLAGS) -S -o $@ $<
 
 $(ARCH)/copy_ispc.zmm.cpp: copy.ispc params.h

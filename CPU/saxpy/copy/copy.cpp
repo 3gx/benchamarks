@@ -24,7 +24,7 @@ static double rtc(void)
 
 int main(int argc, char * argv[])
 {
-  fprintf(stderr, " N= %d\n", N);
+  fprintf(stderr, " ~~~~~~~~~~~~~~~~~~~~~~~~~ \n");
 
   const int rep = argc > 1 ? atoi(argv[1]) : 1024;
   fprintf(stderr, " rep= %d\n", rep);
@@ -55,8 +55,11 @@ int main(int argc, char * argv[])
 
 #pragma omp master
     {
+#ifndef __MIC__
+      /* mic uses hacked-assembly directly, so this number is irrelevant */
       fprintf(stderr, " --- used %d KB of memory per array --- \n",
           n*sizeof(real)*nthreads);
+#endif
     }
 
 
@@ -104,6 +107,7 @@ int main(int argc, char * argv[])
     }
   }
 
+  fprintf(stderr, " ~~~~~~~~~~~~~~~~~~~~~~~~~ \n");
   return 0;
 
 }
