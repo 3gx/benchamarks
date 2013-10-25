@@ -53,9 +53,10 @@ int main(int argc, char * argv[])
     read(y,x,&n);
     read(y,x,&n);
 
+#if 0
 #pragma omp master
     {
-#ifndef __MIC__
+#ifndef __MIC__ 
       /* mic uses hacked-assembly directly, so this number is irrelevant */
       fprintf(stderr, " --- used %d KB of memory per array --- \n",
           n*sizeof(real)*nthreads);
@@ -66,6 +67,7 @@ int main(int argc, char * argv[])
           n*sizeof(real)*nthreads);
 #endif
     }
+#endif
 
 
 #pragma omp barrier

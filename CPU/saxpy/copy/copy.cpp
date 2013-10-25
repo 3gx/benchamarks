@@ -53,6 +53,7 @@ int main(int argc, char * argv[])
     copy(x,y,&n);
     copy(x,y,&n);
 
+#if 0
 #pragma omp master
     {
 #ifndef __MIC__
@@ -66,6 +67,7 @@ int main(int argc, char * argv[])
           n*sizeof(real)*nthreads);
 #endif
     }
+#endif
 
 
 #pragma omp barrier
