@@ -8,7 +8,7 @@ export void  saxpy(
 {
   uniform int i = 0;
 
-#if 0
+#if 1
 #define Y z
 #else
 #define Y y  /* this doesn't use non-temporal store, so results are skewed */
