@@ -1,0 +1,23 @@
+CXX=g++  -fopenmp
+CXXFLAGS= -O3 -mavx
+
+ISPC=ispc
+ISPCFLAGS =  -O3 --target=avx1-i32x8 
+ISPCFLAGS+= --opt=force-aligned-memory
+
+all: saxpy saxpy_ispc.s
+
+saxpy: saxpy_ispc.o saxpy.cpp
+	$(CXX) $(CXXFLAGS)  -o $@ $^
+
+saxpy_ispc.o: saxpy.ispc
+	$(ISPC) $(ISPCFLAGS)  -o $@ $<
+
+saxpy_ispc.s: saxpy.ispc
+	$(ISPC) $(ISPCFLAGS) --emit-asm  -o $@ $<
+
+clean:
+	/bin/rm -f saxpy *.o *.s
+
+clean_all:
+	/bin/rm -f saxpy *.o *.s *~
