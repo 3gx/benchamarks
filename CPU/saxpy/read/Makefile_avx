@@ -1,0 +1,35 @@
+CXX=icpc  -openmp
+CXXFLAGS= -O3 -xavx 
+
+ISPC=ispc
+ISPCFLAGS =  -O3 --target=avx1-i32x8 
+ISPCFLAGS+= --opt=force-aligned-memory
+
+ARCH=avx
+all: $(ARCH)/read_ispc.s read_$(ARCH)
+
+read_$(ARCH): $(ARCH)/read_ispc.o read.cpp params.h
+	$(CXX) $(CXXFLAGS)  -o $@ $^ -g
+
+$(ARCH)/read_ispc.o: $(ARCH)/read_ispc.s
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+$(ARCH)/read_ispc.s: read.ispc params.h
+	mkdir -p $(ARCH)
+	$(ISPC) $(ISPCFLAGS) --emit-asm  -o $@ $<
+
+run_compact: all
+	KMP_AFFINITY=compact ./read_$(ARCH) 1024000 1
+	KMP_AFFINITY=compact ./read_$(ARCH) 1024000 2
+	KMP_AFFINITY=compact ./read_$(ARCH) 1024000 4
+
+run_scatter: all
+	KMP_AFFINITY=scatter ./read_$(ARCH) 1024000 1
+	KMP_AFFINITY=scatter ./read_$(ARCH) 1024000 2
+	KMP_AFFINITY=scatter ./read_$(ARCH) 1024000 4
+
+clean:
+	/bin/rm -rf read_$(ARCH)  $(ARCH)
+
+clean_all:
+	/bin/rm -rf read_$(ARCH) $(ARCH) *~
