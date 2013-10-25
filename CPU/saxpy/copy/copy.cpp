@@ -60,6 +60,11 @@ int main(int argc, char * argv[])
       fprintf(stderr, " --- used %d KB of memory per array --- \n",
           n*sizeof(real)*nthreads);
 #endif
+#ifndef __AVX__
+      /* avx uses hacked-assembly directly, so this number is irrelevant */
+      fprintf(stderr, " --- used %d KB of memory per array --- \n",
+          n*sizeof(real)*nthreads);
+#endif
     }
 
 
