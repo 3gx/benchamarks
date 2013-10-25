@@ -1,0 +1,35 @@
+CXX=icpc  -openmp
+CXXFLAGS = -O3 -mmic -g
+CXXFLAGS+=-no-opt-prefetch
+
+ISPC=ispc
+ISPCFLAGS =  -O3 --target=generic-16 --c++-include-file=../knc-i1x16.h
+ISPCFLAGS+= --opt=force-aligned-memory
+
+ARCH=mic
+all: saxpy_$(ARCH) $(ARCH)/saxpy_ispc.s
+
+saxpy_$(ARCH): $(ARCH)/saxpy_ispc.o saxpy.cpp
+	$(CXX) $(CXXFLAGS)  -o $@ $^
+
+$(ARCH)/saxpy_ispc.o: $(ARCH)/saxpy_ispc.zmm.cpp
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+$(ARCH)/saxpy_ispc.s: $(ARCH)/saxpy_ispc.zmm.cpp
+	$(CXX) $(CXXFLAGS) -S -o $@ $<
+
+$(ARCH)/saxpy_ispc.zmm.cpp: saxpy.ispc
+	mkdir -p $(ARCH)
+	$(ISPC) $(ISPCFLAGS) --emit-c++ -o $@ $<
+
+run_compact: saxpy_$(ARCH)
+	MIC_KMP_AFFINITY=compact micrun ./saxpy_$(ARCH) 1024 4
+
+run_scatter: saxpy_$(ARCH)
+	MIC_KMP_AFFINITY=scatter micrun ./saxpy_$(ARCH) 1024 4
+
+clean:
+	/bin/rm -rf saxpy_$(ARCH)  $(ARCH)
+
+clean_all:
+	/bin/rm -rf saxpy_$(ARCH) $(ARCH) *~
