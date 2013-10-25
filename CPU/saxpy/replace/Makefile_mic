@@ -1,0 +1,39 @@
+CXX=icpc  -openmp
+CXXFLAGS = -O3 -mmic 
+#CXXFLAGS+=-no-opt-prefetch
+
+ISPC=ispc
+ISPCFLAGS =  -O3 --target=generic-16 --c++-include-file=../knc-i1x16.h
+ISPCFLAGS+= --opt=force-aligned-memory
+
+ARCH=mic
+all: replace_$(ARCH) $(ARCH)/replace_ispc.s
+
+replace_$(ARCH): $(ARCH)/replace_ispc.o replace.cpp params.h
+	$(CXX) $(CXXFLAGS)  -o $@ $^ -g
+
+$(ARCH)/replace_ispc.o: $(ARCH)/replace_ispc.s
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+$(ARCH)/replace_ispc.s: $(ARCH)/replace_ispc.zmm.cpp
+	if [ -f replace_ispc_mic.s ]; then cp replace_ispc_mic.s $@; else 	$(CXX) $(CXXFLAGS) -S -o $@ $<; fi
+
+$(ARCH)/replace_ispc.zmm.cpp: replace.ispc params.h
+	mkdir -p $(ARCH)
+	$(ISPC) $(ISPCFLAGS) --emit-c++ -o $@ $<
+
+run_compact: all
+	MIC_KMP_AFFINITY=compact micrun ./replace_$(ARCH) 10240 1
+	MIC_KMP_AFFINITY=compact micrun ./replace_$(ARCH) 10240 2
+	MIC_KMP_AFFINITY=compact micrun ./replace_$(ARCH) 10240 4
+
+run_scatter: all
+	MIC_KMP_AFFINITY=scatter micrun ./replace_$(ARCH) 10240 1
+	MIC_KMP_AFFINITY=scatter micrun ./replace_$(ARCH) 10240 2
+	MIC_KMP_AFFINITY=scatter micrun ./replace_$(ARCH) 10240 4
+
+clean:
+	/bin/rm -rf replace_$(ARCH)  $(ARCH)
+
+clean_all:
+	/bin/rm -rf replace_$(ARCH) $(ARCH) *~
