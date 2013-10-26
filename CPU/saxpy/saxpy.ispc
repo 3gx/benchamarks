@@ -8,7 +8,7 @@ export void  saxpy(
 {
   uniform int i = 0;
 
-#define NLOOP 64
+#define NLOOP 16
 
 #if 1
 #define SAXPY
@@ -84,51 +84,54 @@ export void  saxpy(
   z[shift(15)] = a*x[shift(15)];
 #endif
 
+  for (uniform int k = 0; k < 16; k++)
+  {
 #define shift(n) ((n+ 0)*programCount + programIndex)
-  compute;
-  i++;
+    compute;
+    i++;
 #undef shift
 
 #if NLOOP > 16
 #define shift(n) ((n+16)*programCount + programIndex)
-  compute;
-  i++;
+    compute;
+    i++;
 #undef shift
 #endif
 
 #if NLOOP > 32
 #define shift(n) ((n+32)*programCount + programIndex)
-  compute;
-  i++;
+    compute;
+    i++;
 #undef shift
 
 #define shift(n) ((n+48)*programCount + programIndex)
-  compute;
-  i++;
+    compute;
+    i++;
 #undef shift
 #endif
 
 #if NLOOP > 64
 #define shift(n) ((n+64)*programCount + programIndex)
-  compute;
-  i++;
+    compute;
+    i++;
 #undef shift
 
 #define shift(n) ((n+80)*programCount + programIndex)
-  compute;
-  i++;
+    compute;
+    i++;
 #undef shift
 
 #define shift(n) ((n+96)*programCount + programIndex)
-  compute;
-  i++;
+    compute;
+    i++;
 #undef shift
 
 #define shift(n) ((n+112)*programCount + programIndex)
-  compute;
-  i++;
+    compute;
+    i++;
 #undef shift
 #endif
+  }
 
 
   *n_out = (programCount*16)*i;
