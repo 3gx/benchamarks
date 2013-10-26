@@ -24,24 +24,34 @@ export void  saxpy(
 #define COPYMUL
 #endif
 
+#if 1
+#define OP(i) z[i] = z[i] + a*x[i];
+#else
+#if 1
+#define OP(i) z[i] = y[i] + a*x[i];
+#else
+#define OP(i) z[i] = y[i]; z[i] = z[i] + a*x[i];
+#endif
+#endif
+
 #ifdef SAXPY
 #define compute \
-  z[shift( 0)] = a*x[shift( 0)] + Y[shift( 0)]; \
-  z[shift( 1)] = a*x[shift( 1)] + Y[shift( 1)]; \
-  z[shift( 2)] = a*x[shift( 2)] + Y[shift( 2)]; \
-  z[shift( 3)] = a*x[shift( 3)] + Y[shift( 3)]; \
-  z[shift( 4)] = a*x[shift( 4)] + Y[shift( 4)]; \
-  z[shift( 5)] = a*x[shift( 5)] + Y[shift( 5)]; \
-  z[shift( 6)] = a*x[shift( 6)] + Y[shift( 6)]; \
-  z[shift( 7)] = a*x[shift( 7)] + Y[shift( 7)]; \
-  z[shift( 8)] = a*x[shift( 8)] + Y[shift( 8)]; \
-  z[shift( 9)] = a*x[shift( 9)] + Y[shift( 9)]; \
-  z[shift(10)] = a*x[shift(10)] + Y[shift(10)]; \
-  z[shift(11)] = a*x[shift(11)] + Y[shift(11)]; \
-  z[shift(12)] = a*x[shift(12)] + Y[shift(12)]; \
-  z[shift(13)] = a*x[shift(13)] + Y[shift(13)]; \
-  z[shift(14)] = a*x[shift(14)] + Y[shift(14)]; \
-  z[shift(15)] = a*x[shift(15)] + Y[shift(15)]; 
+  OP(shift( 0)); \
+  OP(shift( 1)); \
+  OP(shift( 2)); \
+  OP(shift( 3)); \
+  OP(shift( 4)); \
+  OP(shift( 5)); \
+  OP(shift( 6)); \
+  OP(shift( 7)); \
+  OP(shift( 8)); \
+  OP(shift( 9)); \
+  OP(shift(10)); \
+  OP(shift(11)); \
+  OP(shift(12)); \
+  OP(shift(13)); \
+  OP(shift(14)); \
+  OP(shift(15)); 
 #elif defined CACHEREPLACE  
 #define compute \
   z[shift( 0)] = a*z[shift( 0)]; \
