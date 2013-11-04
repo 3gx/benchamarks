@@ -149,265 +149,213 @@ saxpy:
                                 # LOE rdx rcx rbx rbp rsi rdi r12 r13 r14 r15 eax zmm0
 ..B2.2:                         # Preds ..B2.3 ..B2.1 Latency 253
         cmpl      $15, %eax                                     #546.28 c1
-#####
+
         vmovaps   (%rdi), %zmm1                                 #498.28 c1
-        vfmadd213ps (%rsi), %zmm0, %zmm1                        #499.26 c5
-        nop                                                     #499.3 c9
-        vmovaps   %zmm1, (%rdx)                                 #499.3 c13
         vmovaps   64(%rdi), %zmm2                               #501.28 c17
-        vfmadd213ps 64(%rsi), %zmm0, %zmm2                      #502.29 c21
-        nop                                                     #502.3 c25
-        vmovaps   %zmm2, 64(%rdx)                               #502.3 c29
         vmovaps   128(%rdi), %zmm3                              #504.28 c33
-        vfmadd213ps 128(%rsi), %zmm0, %zmm3                     #505.29 c37
-        nop                                                     #505.3 c41
-        vmovaps   %zmm3, 128(%rdx)                              #505.3 c45
         vmovaps   192(%rdi), %zmm4                              #507.28 c49
+        vfmadd213ps (%rsi), %zmm0, %zmm1                        #499.26 c5
+        vfmadd213ps 64(%rsi), %zmm0, %zmm2                      #502.29 c21
+        vfmadd213ps 128(%rsi), %zmm0, %zmm3                     #505.29 c37
         vfmadd213ps 192(%rsi), %zmm0, %zmm4                     #508.29 c53
-        nop                                                     #508.3 c57
+        vmovaps   %zmm1, (%rdx)                                 #499.3 c13
+        vmovaps   %zmm2, 64(%rdx)                               #502.3 c29
+        vmovaps   %zmm3, 128(%rdx)                              #505.3 c45
         vmovaps   %zmm4, 192(%rdx)                              #508.3 c61
+
         vmovaps   256(%rdi), %zmm5                              #510.28 c65
-        vfmadd213ps 256(%rsi), %zmm0, %zmm5                     #511.29 c69
-        nop                                                     #511.3 c73
-        vmovaps   %zmm5, 256(%rdx)                              #511.3 c77
         vmovaps   320(%rdi), %zmm6                              #513.28 c81
-        vfmadd213ps 320(%rsi), %zmm0, %zmm6                     #514.29 c85
-        nop                                                     #514.3 c89
-        vmovaps   %zmm6, 320(%rdx)                              #514.3 c93
         vmovaps   384(%rdi), %zmm7                              #516.28 c97
-        vfmadd213ps 384(%rsi), %zmm0, %zmm7                     #517.29 c101
-        nop                                                     #517.3 c105
-        vmovaps   %zmm7, 384(%rdx)                              #517.3 c109
         vmovaps   448(%rdi), %zmm8                              #519.28 c113
+        vfmadd213ps 256(%rsi), %zmm0, %zmm5                     #511.29 c69
+        vfmadd213ps 320(%rsi), %zmm0, %zmm6                     #514.29 c85
+        vfmadd213ps 384(%rsi), %zmm0, %zmm7                     #517.29 c101
         vfmadd213ps 448(%rsi), %zmm0, %zmm8                     #520.29 c117
-        nop                                                     #520.3 c121
+        vmovaps   %zmm5, 256(%rdx)                              #511.3 c77
+        vmovaps   %zmm6, 320(%rdx)                              #514.3 c93
+        vmovaps   %zmm7, 384(%rdx)                              #517.3 c109
         vmovaps   %zmm8, 448(%rdx)                              #520.3 c125
+
         vmovaps   512(%rdi), %zmm9                              #522.28 c129
-        vfmadd213ps 512(%rsi), %zmm0, %zmm9                     #523.29 c133
-        nop                                                     #523.3 c137
-        vmovaps   %zmm9, 512(%rdx)                              #523.3 c141
         vmovaps   576(%rdi), %zmm10                             #525.28 c145
-        vfmadd213ps 576(%rsi), %zmm0, %zmm10                    #526.29 c149
-        nop                                                     #526.3 c153
-        vmovaps   %zmm10, 576(%rdx)                             #526.3 c157
         vmovaps   640(%rdi), %zmm11                             #528.28 c161
-        vfmadd213ps 640(%rsi), %zmm0, %zmm11                    #529.29 c165
-        nop                                                     #529.3 c169
-        vmovaps   %zmm11, 640(%rdx)                             #529.3 c173
         vmovaps   704(%rdi), %zmm12                             #531.28 c177
+        vfmadd213ps 512(%rsi), %zmm0, %zmm9                     #523.29 c133
+        vfmadd213ps 576(%rsi), %zmm0, %zmm10                    #526.29 c149
+        vfmadd213ps 640(%rsi), %zmm0, %zmm11                    #529.29 c165
         vfmadd213ps 704(%rsi), %zmm0, %zmm12                    #532.29 c181
-        nop                                                     #532.3 c185
+        vmovaps   %zmm9, 512(%rdx)                              #523.3 c141
+        vmovaps   %zmm10, 576(%rdx)                             #526.3 c157
+        vmovaps   %zmm11, 640(%rdx)                             #529.3 c173
         vmovaps   %zmm12, 704(%rdx)                             #532.3 c189
+
         vmovaps   768(%rdi), %zmm13                             #534.28 c193
-        vfmadd213ps 768(%rsi), %zmm0, %zmm13                    #535.29 c197
-        nop                                                     #535.3 c201
-        vmovaps   %zmm13, 768(%rdx)                             #535.3 c205
         vmovaps   832(%rdi), %zmm14                             #537.28 c209
-        vfmadd213ps 832(%rsi), %zmm0, %zmm14                    #538.29 c213
-        nop                                                     #538.3 c217
-        vmovaps   %zmm14, 832(%rdx)                             #538.3 c221
         vmovaps   896(%rdi), %zmm15                             #540.28 c225
-        vfmadd213ps 896(%rsi), %zmm0, %zmm15                    #541.29 c229
-        nop                                                     #541.3 c233
-        vmovaps   %zmm15, 896(%rdx)                             #541.3 c237
         vmovaps   960(%rdi), %zmm16                             #543.28 c241
+        vfmadd213ps 768(%rsi), %zmm0, %zmm13                    #535.29 c197
+        vfmadd213ps 832(%rsi), %zmm0, %zmm14                    #538.29 c213
+        vfmadd213ps 896(%rsi), %zmm0, %zmm15                    #541.29 c229
         vfmadd213ps 960(%rsi), %zmm0, %zmm16                    #544.29 c245
-        nop                                                     #544.3 c249
+        vmovaps   %zmm13, 768(%rdx)                             #535.3 c205
+        vmovaps   %zmm14, 832(%rdx)                             #538.3 c221
+        vmovaps   %zmm15, 896(%rdx)                             #541.3 c237
         vmovaps   %zmm16, 960(%rdx)                             #544.3 c253
-#####
+#############
         vmovaps   (%rdi), %zmm1                                 #498.28 c1
-        vfmadd213ps (%rsi), %zmm0, %zmm1                        #499.26 c5
-        nop                                                     #499.3 c9
-        vmovaps   %zmm1, (%rdx)                                 #499.3 c13
         vmovaps   64(%rdi), %zmm2                               #501.28 c17
-        vfmadd213ps 64(%rsi), %zmm0, %zmm2                      #502.29 c21
-        nop                                                     #502.3 c25
-        vmovaps   %zmm2, 64(%rdx)                               #502.3 c29
         vmovaps   128(%rdi), %zmm3                              #504.28 c33
-        vfmadd213ps 128(%rsi), %zmm0, %zmm3                     #505.29 c37
-        nop                                                     #505.3 c41
-        vmovaps   %zmm3, 128(%rdx)                              #505.3 c45
         vmovaps   192(%rdi), %zmm4                              #507.28 c49
+        vfmadd213ps (%rsi), %zmm0, %zmm1                        #499.26 c5
+        vfmadd213ps 64(%rsi), %zmm0, %zmm2                      #502.29 c21
+        vfmadd213ps 128(%rsi), %zmm0, %zmm3                     #505.29 c37
         vfmadd213ps 192(%rsi), %zmm0, %zmm4                     #508.29 c53
-        nop                                                     #508.3 c57
+        vmovaps   %zmm1, (%rdx)                                 #499.3 c13
+        vmovaps   %zmm2, 64(%rdx)                               #502.3 c29
+        vmovaps   %zmm3, 128(%rdx)                              #505.3 c45
         vmovaps   %zmm4, 192(%rdx)                              #508.3 c61
+
         vmovaps   256(%rdi), %zmm5                              #510.28 c65
-        vfmadd213ps 256(%rsi), %zmm0, %zmm5                     #511.29 c69
-        nop                                                     #511.3 c73
-        vmovaps   %zmm5, 256(%rdx)                              #511.3 c77
         vmovaps   320(%rdi), %zmm6                              #513.28 c81
-        vfmadd213ps 320(%rsi), %zmm0, %zmm6                     #514.29 c85
-        nop                                                     #514.3 c89
-        vmovaps   %zmm6, 320(%rdx)                              #514.3 c93
         vmovaps   384(%rdi), %zmm7                              #516.28 c97
-        vfmadd213ps 384(%rsi), %zmm0, %zmm7                     #517.29 c101
-        nop                                                     #517.3 c105
-        vmovaps   %zmm7, 384(%rdx)                              #517.3 c109
         vmovaps   448(%rdi), %zmm8                              #519.28 c113
+        vfmadd213ps 256(%rsi), %zmm0, %zmm5                     #511.29 c69
+        vfmadd213ps 320(%rsi), %zmm0, %zmm6                     #514.29 c85
+        vfmadd213ps 384(%rsi), %zmm0, %zmm7                     #517.29 c101
         vfmadd213ps 448(%rsi), %zmm0, %zmm8                     #520.29 c117
-        nop                                                     #520.3 c121
+        vmovaps   %zmm5, 256(%rdx)                              #511.3 c77
+        vmovaps   %zmm6, 320(%rdx)                              #514.3 c93
+        vmovaps   %zmm7, 384(%rdx)                              #517.3 c109
         vmovaps   %zmm8, 448(%rdx)                              #520.3 c125
+
         vmovaps   512(%rdi), %zmm9                              #522.28 c129
-        vfmadd213ps 512(%rsi), %zmm0, %zmm9                     #523.29 c133
-        nop                                                     #523.3 c137
-        vmovaps   %zmm9, 512(%rdx)                              #523.3 c141
         vmovaps   576(%rdi), %zmm10                             #525.28 c145
-        vfmadd213ps 576(%rsi), %zmm0, %zmm10                    #526.29 c149
-        nop                                                     #526.3 c153
-        vmovaps   %zmm10, 576(%rdx)                             #526.3 c157
         vmovaps   640(%rdi), %zmm11                             #528.28 c161
-        vfmadd213ps 640(%rsi), %zmm0, %zmm11                    #529.29 c165
-        nop                                                     #529.3 c169
-        vmovaps   %zmm11, 640(%rdx)                             #529.3 c173
         vmovaps   704(%rdi), %zmm12                             #531.28 c177
+        vfmadd213ps 512(%rsi), %zmm0, %zmm9                     #523.29 c133
+        vfmadd213ps 576(%rsi), %zmm0, %zmm10                    #526.29 c149
+        vfmadd213ps 640(%rsi), %zmm0, %zmm11                    #529.29 c165
         vfmadd213ps 704(%rsi), %zmm0, %zmm12                    #532.29 c181
-        nop                                                     #532.3 c185
+        vmovaps   %zmm9, 512(%rdx)                              #523.3 c141
+        vmovaps   %zmm10, 576(%rdx)                             #526.3 c157
+        vmovaps   %zmm11, 640(%rdx)                             #529.3 c173
         vmovaps   %zmm12, 704(%rdx)                             #532.3 c189
+
         vmovaps   768(%rdi), %zmm13                             #534.28 c193
-        vfmadd213ps 768(%rsi), %zmm0, %zmm13                    #535.29 c197
-        nop                                                     #535.3 c201
-        vmovaps   %zmm13, 768(%rdx)                             #535.3 c205
         vmovaps   832(%rdi), %zmm14                             #537.28 c209
-        vfmadd213ps 832(%rsi), %zmm0, %zmm14                    #538.29 c213
-        nop                                                     #538.3 c217
-        vmovaps   %zmm14, 832(%rdx)                             #538.3 c221
         vmovaps   896(%rdi), %zmm15                             #540.28 c225
-        vfmadd213ps 896(%rsi), %zmm0, %zmm15                    #541.29 c229
-        nop                                                     #541.3 c233
-        vmovaps   %zmm15, 896(%rdx)                             #541.3 c237
         vmovaps   960(%rdi), %zmm16                             #543.28 c241
+        vfmadd213ps 768(%rsi), %zmm0, %zmm13                    #535.29 c197
+        vfmadd213ps 832(%rsi), %zmm0, %zmm14                    #538.29 c213
+        vfmadd213ps 896(%rsi), %zmm0, %zmm15                    #541.29 c229
         vfmadd213ps 960(%rsi), %zmm0, %zmm16                    #544.29 c245
-        nop                                                     #544.3 c249
+        vmovaps   %zmm13, 768(%rdx)                             #535.3 c205
+        vmovaps   %zmm14, 832(%rdx)                             #538.3 c221
+        vmovaps   %zmm15, 896(%rdx)                             #541.3 c237
         vmovaps   %zmm16, 960(%rdx)                             #544.3 c253
-#####
+#############
         vmovaps   (%rdi), %zmm1                                 #498.28 c1
-        vfmadd213ps (%rsi), %zmm0, %zmm1                        #499.26 c5
-        nop                                                     #499.3 c9
-        vmovaps   %zmm1, (%rdx)                                 #499.3 c13
         vmovaps   64(%rdi), %zmm2                               #501.28 c17
-        vfmadd213ps 64(%rsi), %zmm0, %zmm2                      #502.29 c21
-        nop                                                     #502.3 c25
-        vmovaps   %zmm2, 64(%rdx)                               #502.3 c29
         vmovaps   128(%rdi), %zmm3                              #504.28 c33
-        vfmadd213ps 128(%rsi), %zmm0, %zmm3                     #505.29 c37
-        nop                                                     #505.3 c41
-        vmovaps   %zmm3, 128(%rdx)                              #505.3 c45
         vmovaps   192(%rdi), %zmm4                              #507.28 c49
+        vfmadd213ps (%rsi), %zmm0, %zmm1                        #499.26 c5
+        vfmadd213ps 64(%rsi), %zmm0, %zmm2                      #502.29 c21
+        vfmadd213ps 128(%rsi), %zmm0, %zmm3                     #505.29 c37
         vfmadd213ps 192(%rsi), %zmm0, %zmm4                     #508.29 c53
-        nop                                                     #508.3 c57
+        vmovaps   %zmm1, (%rdx)                                 #499.3 c13
+        vmovaps   %zmm2, 64(%rdx)                               #502.3 c29
+        vmovaps   %zmm3, 128(%rdx)                              #505.3 c45
         vmovaps   %zmm4, 192(%rdx)                              #508.3 c61
+
         vmovaps   256(%rdi), %zmm5                              #510.28 c65
-        vfmadd213ps 256(%rsi), %zmm0, %zmm5                     #511.29 c69
-        nop                                                     #511.3 c73
-        vmovaps   %zmm5, 256(%rdx)                              #511.3 c77
         vmovaps   320(%rdi), %zmm6                              #513.28 c81
-        vfmadd213ps 320(%rsi), %zmm0, %zmm6                     #514.29 c85
-        nop                                                     #514.3 c89
-        vmovaps   %zmm6, 320(%rdx)                              #514.3 c93
         vmovaps   384(%rdi), %zmm7                              #516.28 c97
-        vfmadd213ps 384(%rsi), %zmm0, %zmm7                     #517.29 c101
-        nop                                                     #517.3 c105
-        vmovaps   %zmm7, 384(%rdx)                              #517.3 c109
         vmovaps   448(%rdi), %zmm8                              #519.28 c113
+        vfmadd213ps 256(%rsi), %zmm0, %zmm5                     #511.29 c69
+        vfmadd213ps 320(%rsi), %zmm0, %zmm6                     #514.29 c85
+        vfmadd213ps 384(%rsi), %zmm0, %zmm7                     #517.29 c101
         vfmadd213ps 448(%rsi), %zmm0, %zmm8                     #520.29 c117
-        nop                                                     #520.3 c121
+        vmovaps   %zmm5, 256(%rdx)                              #511.3 c77
+        vmovaps   %zmm6, 320(%rdx)                              #514.3 c93
+        vmovaps   %zmm7, 384(%rdx)                              #517.3 c109
         vmovaps   %zmm8, 448(%rdx)                              #520.3 c125
+
         vmovaps   512(%rdi), %zmm9                              #522.28 c129
-        vfmadd213ps 512(%rsi), %zmm0, %zmm9                     #523.29 c133
-        nop                                                     #523.3 c137
-        vmovaps   %zmm9, 512(%rdx)                              #523.3 c141
         vmovaps   576(%rdi), %zmm10                             #525.28 c145
-        vfmadd213ps 576(%rsi), %zmm0, %zmm10                    #526.29 c149
-        nop                                                     #526.3 c153
-        vmovaps   %zmm10, 576(%rdx)                             #526.3 c157
         vmovaps   640(%rdi), %zmm11                             #528.28 c161
-        vfmadd213ps 640(%rsi), %zmm0, %zmm11                    #529.29 c165
-        nop                                                     #529.3 c169
-        vmovaps   %zmm11, 640(%rdx)                             #529.3 c173
         vmovaps   704(%rdi), %zmm12                             #531.28 c177
+        vfmadd213ps 512(%rsi), %zmm0, %zmm9                     #523.29 c133
+        vfmadd213ps 576(%rsi), %zmm0, %zmm10                    #526.29 c149
+        vfmadd213ps 640(%rsi), %zmm0, %zmm11                    #529.29 c165
         vfmadd213ps 704(%rsi), %zmm0, %zmm12                    #532.29 c181
-        nop                                                     #532.3 c185
+        vmovaps   %zmm9, 512(%rdx)                              #523.3 c141
+        vmovaps   %zmm10, 576(%rdx)                             #526.3 c157
+        vmovaps   %zmm11, 640(%rdx)                             #529.3 c173
         vmovaps   %zmm12, 704(%rdx)                             #532.3 c189
+
         vmovaps   768(%rdi), %zmm13                             #534.28 c193
-        vfmadd213ps 768(%rsi), %zmm0, %zmm13                    #535.29 c197
-        nop                                                     #535.3 c201
-        vmovaps   %zmm13, 768(%rdx)                             #535.3 c205
         vmovaps   832(%rdi), %zmm14                             #537.28 c209
-        vfmadd213ps 832(%rsi), %zmm0, %zmm14                    #538.29 c213
-        nop                                                     #538.3 c217
-        vmovaps   %zmm14, 832(%rdx)                             #538.3 c221
         vmovaps   896(%rdi), %zmm15                             #540.28 c225
-        vfmadd213ps 896(%rsi), %zmm0, %zmm15                    #541.29 c229
-        nop                                                     #541.3 c233
-        vmovaps   %zmm15, 896(%rdx)                             #541.3 c237
         vmovaps   960(%rdi), %zmm16                             #543.28 c241
+        vfmadd213ps 768(%rsi), %zmm0, %zmm13                    #535.29 c197
+        vfmadd213ps 832(%rsi), %zmm0, %zmm14                    #538.29 c213
+        vfmadd213ps 896(%rsi), %zmm0, %zmm15                    #541.29 c229
         vfmadd213ps 960(%rsi), %zmm0, %zmm16                    #544.29 c245
-        nop                                                     #544.3 c249
+        vmovaps   %zmm13, 768(%rdx)                             #535.3 c205
+        vmovaps   %zmm14, 832(%rdx)                             #538.3 c221
+        vmovaps   %zmm15, 896(%rdx)                             #541.3 c237
         vmovaps   %zmm16, 960(%rdx)                             #544.3 c253
-#####
+#############
         vmovaps   (%rdi), %zmm1                                 #498.28 c1
-        vfmadd213ps (%rsi), %zmm0, %zmm1                        #499.26 c5
-        nop                                                     #499.3 c9
-        vmovaps   %zmm1, (%rdx)                                 #499.3 c13
         vmovaps   64(%rdi), %zmm2                               #501.28 c17
-        vfmadd213ps 64(%rsi), %zmm0, %zmm2                      #502.29 c21
-        nop                                                     #502.3 c25
-        vmovaps   %zmm2, 64(%rdx)                               #502.3 c29
         vmovaps   128(%rdi), %zmm3                              #504.28 c33
-        vfmadd213ps 128(%rsi), %zmm0, %zmm3                     #505.29 c37
-        nop                                                     #505.3 c41
-        vmovaps   %zmm3, 128(%rdx)                              #505.3 c45
         vmovaps   192(%rdi), %zmm4                              #507.28 c49
+        vfmadd213ps (%rsi), %zmm0, %zmm1                        #499.26 c5
+        vfmadd213ps 64(%rsi), %zmm0, %zmm2                      #502.29 c21
+        vfmadd213ps 128(%rsi), %zmm0, %zmm3                     #505.29 c37
         vfmadd213ps 192(%rsi), %zmm0, %zmm4                     #508.29 c53
-        nop                                                     #508.3 c57
+        vmovaps   %zmm1, (%rdx)                                 #499.3 c13
+        vmovaps   %zmm2, 64(%rdx)                               #502.3 c29
+        vmovaps   %zmm3, 128(%rdx)                              #505.3 c45
         vmovaps   %zmm4, 192(%rdx)                              #508.3 c61
+
         vmovaps   256(%rdi), %zmm5                              #510.28 c65
-        vfmadd213ps 256(%rsi), %zmm0, %zmm5                     #511.29 c69
-        nop                                                     #511.3 c73
-        vmovaps   %zmm5, 256(%rdx)                              #511.3 c77
         vmovaps   320(%rdi), %zmm6                              #513.28 c81
-        vfmadd213ps 320(%rsi), %zmm0, %zmm6                     #514.29 c85
-        nop                                                     #514.3 c89
-        vmovaps   %zmm6, 320(%rdx)                              #514.3 c93
         vmovaps   384(%rdi), %zmm7                              #516.28 c97
-        vfmadd213ps 384(%rsi), %zmm0, %zmm7                     #517.29 c101
-        nop                                                     #517.3 c105
-        vmovaps   %zmm7, 384(%rdx)                              #517.3 c109
         vmovaps   448(%rdi), %zmm8                              #519.28 c113
+        vfmadd213ps 256(%rsi), %zmm0, %zmm5                     #511.29 c69
+        vfmadd213ps 320(%rsi), %zmm0, %zmm6                     #514.29 c85
+        vfmadd213ps 384(%rsi), %zmm0, %zmm7                     #517.29 c101
         vfmadd213ps 448(%rsi), %zmm0, %zmm8                     #520.29 c117
-        nop                                                     #520.3 c121
+        vmovaps   %zmm5, 256(%rdx)                              #511.3 c77
+        vmovaps   %zmm6, 320(%rdx)                              #514.3 c93
+        vmovaps   %zmm7, 384(%rdx)                              #517.3 c109
         vmovaps   %zmm8, 448(%rdx)                              #520.3 c125
+
         vmovaps   512(%rdi), %zmm9                              #522.28 c129
-        vfmadd213ps 512(%rsi), %zmm0, %zmm9                     #523.29 c133
-        nop                                                     #523.3 c137
-        vmovaps   %zmm9, 512(%rdx)                              #523.3 c141
         vmovaps   576(%rdi), %zmm10                             #525.28 c145
-        vfmadd213ps 576(%rsi), %zmm0, %zmm10                    #526.29 c149
-        nop                                                     #526.3 c153
-        vmovaps   %zmm10, 576(%rdx)                             #526.3 c157
         vmovaps   640(%rdi), %zmm11                             #528.28 c161
-        vfmadd213ps 640(%rsi), %zmm0, %zmm11                    #529.29 c165
-        nop                                                     #529.3 c169
-        vmovaps   %zmm11, 640(%rdx)                             #529.3 c173
         vmovaps   704(%rdi), %zmm12                             #531.28 c177
+        vfmadd213ps 512(%rsi), %zmm0, %zmm9                     #523.29 c133
+        vfmadd213ps 576(%rsi), %zmm0, %zmm10                    #526.29 c149
+        vfmadd213ps 640(%rsi), %zmm0, %zmm11                    #529.29 c165
         vfmadd213ps 704(%rsi), %zmm0, %zmm12                    #532.29 c181
-        nop                                                     #532.3 c185
+        vmovaps   %zmm9, 512(%rdx)                              #523.3 c141
+        vmovaps   %zmm10, 576(%rdx)                             #526.3 c157
+        vmovaps   %zmm11, 640(%rdx)                             #529.3 c173
         vmovaps   %zmm12, 704(%rdx)                             #532.3 c189
+
         vmovaps   768(%rdi), %zmm13                             #534.28 c193
-        vfmadd213ps 768(%rsi), %zmm0, %zmm13                    #535.29 c197
-        nop                                                     #535.3 c201
-        vmovaps   %zmm13, 768(%rdx)                             #535.3 c205
         vmovaps   832(%rdi), %zmm14                             #537.28 c209
-        vfmadd213ps 832(%rsi), %zmm0, %zmm14                    #538.29 c213
-        nop                                                     #538.3 c217
-        vmovaps   %zmm14, 832(%rdx)                             #538.3 c221
         vmovaps   896(%rdi), %zmm15                             #540.28 c225
-        vfmadd213ps 896(%rsi), %zmm0, %zmm15                    #541.29 c229
-        nop                                                     #541.3 c233
-        vmovaps   %zmm15, 896(%rdx)                             #541.3 c237
         vmovaps   960(%rdi), %zmm16                             #543.28 c241
+        vfmadd213ps 768(%rsi), %zmm0, %zmm13                    #535.29 c197
+        vfmadd213ps 832(%rsi), %zmm0, %zmm14                    #538.29 c213
+        vfmadd213ps 896(%rsi), %zmm0, %zmm15                    #541.29 c229
         vfmadd213ps 960(%rsi), %zmm0, %zmm16                    #544.29 c245
-        nop                                                     #544.3 c249
+        vmovaps   %zmm13, 768(%rdx)                             #535.3 c205
+        vmovaps   %zmm14, 832(%rdx)                             #538.3 c221
+        vmovaps   %zmm15, 896(%rdx)                             #541.3 c237
         vmovaps   %zmm16, 960(%rdx)                             #544.3 c253
         jne       ..B2.3        # Prob 82%                      #546.28 c253
                                 # LOE rdx rcx rbx rbp rsi rdi r12 r13 r14 r15 eax zmm0
