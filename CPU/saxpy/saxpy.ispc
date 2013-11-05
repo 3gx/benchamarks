@@ -13,9 +13,9 @@ export void  saxpy(
 #if 1
 #define SAXPY
 #elif 1 /* don't forget that in saxpy.ispc we multiple N*3, thus the result must be scaled by 2.0/3.0 */
-#define CACHEREPLACE
+#define SCALE
 #else  /* don't forget that in saxpy.ispc we multiple N*3, thus the result must be scaled by 2.0/3.0 */
-#define COPYMUL
+#define COPY
 #endif
 
 
@@ -29,9 +29,9 @@ export void  saxpy(
 #define OP(i) z[i] = y[i]; z[i] = z[i] + a*x[i];
 #endif
 #endif
-#elif defined CACHEREPLACE
+#elif defined SCALE
 #define OP(i) z[i] = a*z[i]
-#elif defined COPYMUL
+#elif defined COPY
 #define OP(i) z[i] = x[i]
 #endif
 
