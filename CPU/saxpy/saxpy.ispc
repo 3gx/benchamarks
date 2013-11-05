@@ -8,7 +8,7 @@ export void  saxpy(
 {
   uniform int i = 0;
 
-#define NLOOP 16
+#define NLOOP 64
 
 #if 1
 #define SAXPY
@@ -32,7 +32,7 @@ export void  saxpy(
 #elif defined CACHEREPLACE
 #define OP(i) z[i] = a*z[i]
 #elif defined COPYMUL
-#define OP(i) z[i] = a*x[i]
+#define OP(i) z[i] = x[i]
 #endif
 
 #define compute \
@@ -53,7 +53,7 @@ export void  saxpy(
   OP(shift(14)); \
   OP(shift(15)); 
 
-  for (uniform int k = 0; k < 16; k++)
+  //for (uniform int k = 0; k < 16; k++)
   {
 #define shift(n) ((n+ 0)*programCount + programIndex)
     compute;

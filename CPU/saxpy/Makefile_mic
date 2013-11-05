@@ -1,5 +1,5 @@
 CXX=icpc  -openmp
-CXXFLAGS = -O3 -mmic 
+CXXFLAGS = -O3 -mmic  -fno-alias
 #CXXFLAGS+=-no-opt-prefetch
 
 ISPC=ispc
