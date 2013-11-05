@@ -1,0 +1,38 @@
+CXX=icpc  -openmp
+CXXFLAGS= -O3 -xavx 
+
+ISPC=ispc
+ISPCFLAGS =  -O3 --target=avx1-i32x8 
+ISPCFLAGS+= --opt=force-aligned-memory
+
+BENCH=SAXPY1
+ISPCFLAGS+=-D$(BENCH)
+
+ARCH=avx
+all: $(ARCH)/bench_ispc.s bench_$(ARCH)
+
+bench_$(ARCH): $(ARCH)/bench_ispc.o bench.cpp
+	$(CXX) $(CXXFLAGS)  -o $@ $^ -g
+
+$(ARCH)/bench_ispc.o: $(ARCH)/bench_ispc.s
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+$(ARCH)/bench_ispc.s: bench.ispc 
+	mkdir -p $(ARCH)
+	$(ISPC) $(ISPCFLAGS) --emit-asm  -o $@ $<
+
+run_compact: all
+	KMP_AFFINITY=compact ./bench_$(ARCH) 10240 1
+	KMP_AFFINITY=compact ./bench_$(ARCH) 10240 2
+	KMP_AFFINITY=compact ./bench_$(ARCH) 10240 4
+
+run_scatter: all
+	KMP_AFFINITY=scatter ./bench_$(ARCH) 10240 1
+	KMP_AFFINITY=scatter ./bench_$(ARCH) 10240 2
+	KMP_AFFINITY=scatter ./bench_$(ARCH) 10240 4
+
+clean:
+	/bin/rm -rf bench_$(ARCH)  $(ARCH)
+
+clean_all:
+	/bin/rm -rf bench_$(ARCH) $(ARCH) *~

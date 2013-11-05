@@ -1,0 +1,42 @@
+CXX=icpc  -openmp
+CXXFLAGS = -O3 -mmic  -fno-alias
+#CXXFLAGS+=-no-opt-prefetch
+
+ISPC=ispc
+ISPCFLAGS =  -O3 --target=generic-16 --c++-include-file=../knc-i1x16.h
+ISPCFLAGS+= --opt=force-aligned-memory
+
+BENCH=SAXPY1
+ISPCFLAGS+=-D$(BENCH)
+
+ARCH=mic
+all: bench_$(ARCH) $(ARCH)/bench_ispc.s
+
+bench_$(ARCH): $(ARCH)/bench_ispc.o bench.cpp 
+	$(CXX) $(CXXFLAGS)  -o $@ $^ -g
+
+$(ARCH)/bench_ispc.o: $(ARCH)/bench_ispc.s
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+$(ARCH)/bench_ispc.s: $(ARCH)/bench_ispc.zmm.cpp
+	$(CXX) $(CXXFLAGS) -S -o $@ $<
+
+$(ARCH)/bench_ispc.zmm.cpp: bench.ispc 
+	mkdir -p $(ARCH)
+	$(ISPC) $(ISPCFLAGS) --emit-c++ -o $@ $<
+
+run_compact: all
+	MIC_KMP_AFFINITY=compact micrun ./bench_$(ARCH) 10240 1
+	MIC_KMP_AFFINITY=compact micrun ./bench_$(ARCH) 10240 2
+	MIC_KMP_AFFINITY=compact micrun ./bench_$(ARCH) 10240 4
+
+run_scatter: all
+	MIC_KMP_AFFINITY=scatter micrun ./bench_$(ARCH) 10240 1
+	MIC_KMP_AFFINITY=scatter micrun ./bench_$(ARCH) 10240 2
+	MIC_KMP_AFFINITY=scatter micrun ./bench_$(ARCH) 10240 4
+
+clean:
+	/bin/rm -rf bench_$(ARCH)  $(ARCH)
+
+clean_all:
+	/bin/rm -rf bench_$(ARCH) $(ARCH) *~

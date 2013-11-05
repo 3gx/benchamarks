@@ -2,11 +2,10 @@
 #include <cstdlib>
 #include <cassert>
 #include <omp.h>
-#include "params.h"
 
 #include <sys/time.h>
 
-extern "C" void bench(real, real*,real*,real*,int*);
+extern "C" void bench(double, double*,double*,double*,int*, int*);
 
 static double rtc(void)
 {
@@ -24,8 +23,6 @@ static double rtc(void)
 
 int main(int argc, char * argv[])
 {
-  fprintf(stderr, " N= %d\n", N);
-
   const int rep = argc > 1 ? atoi(argv[1]) : 1024;
   fprintf(stderr, " rep= %d\n", rep);
   
@@ -35,14 +32,15 @@ int main(int argc, char * argv[])
   double flops_sum = 0.0, bytes_sum = 0.0, dt_max = 0.0;
 #pragma omp parallel num_threads(nthreads)
   {
-    real *x,*y,*z;
+    double *x,*y,*z;
+    const size_t N = 65536;
 #pragma omp critical
     {
-      x = (real*)_mm_malloc(N*sizeof(real), ALIGN);
-      y = (real*)_mm_malloc(N*sizeof(real), ALIGN);
-      z = (real*)_mm_malloc(N*sizeof(real), ALIGN);
+      x = (double*)_mm_malloc(N*sizeof(double), ALIGN);
+      y = (double*)_mm_malloc(N*sizeof(double), ALIGN);
+      z = (double*)_mm_malloc(N*sizeof(double), ALIGN);
     }
-    const real a = drand48();
+    const double a = drand48();
 
     for (int i = 0; i < N; i++)
     {
@@ -51,24 +49,24 @@ int main(int argc, char * argv[])
       z[i] = drand48();
     }
 
-    int n;
-    bench(a,x,y,z,&n);
-    bench(a,x,y,z,&n);
-    bench(a,x,y,z,&n);
+    int ndat, nflop;
+    bench(a,x,y,z,&ndat,&nflop);
+    bench(a,x,y,z,&ndat,&nflop);
+    bench(a,x,y,z,&ndat,&nflop);
 
 #pragma omp barrier
     const double t0 = rtc();
     for (int r = 0; r < rep; r++)
     {
-      bench(a,x,y,z,&n);
+      bench(a,x,y,z,&ndat,&nflop);
     }
     const double t1 = rtc();
 #pragma omp barrier
 
     const double dt = t1-t0;
 
-    const double flops = 2.0*rep*n;
-    const double bytes = 3.0*sizeof(real)*n*rep;
+    const double flops = rep*nflop;
+    const double bytes = sizeof(double)*rep*ndat;
 
 #pragma omp critical
     {
