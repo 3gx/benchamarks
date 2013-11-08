@@ -7,7 +7,7 @@ export void bench(
 {
   uniform int i = 0;
 
-#define NLOOP 32
+#define NLOOP 16
 
 #ifdef SAXPY1
 #define OP(i) z[i] = y[i] + a*x[i];

@@ -33,16 +33,32 @@ int main(int argc, char * argv[])
 #pragma omp parallel num_threads(nthreads)
   {
     double *x,*y,*z;
-    const size_t N = 65536;
-#pragma omp critical
+    const size_t N = 65537;
+    const int tid = omp_get_thread_num();
+//#pragma omp critical
     {
       x = (double*)_mm_malloc(N*sizeof(double), ALIGN);
       y = (double*)_mm_malloc(N*sizeof(double), ALIGN);
       z = (double*)_mm_malloc(N*sizeof(double), ALIGN);
+#if 1
+      x +=       tid*256;
+      y += 64 +  tid*256;
+      z += 128 + tid*256;
+#endif
+      assert( ((unsigned long long)x)%64 == 0);
+      assert( ((unsigned long long)y)%64 == 0);
+      assert( ((unsigned long long)z)%64 == 0);
     }
+    fprintf(stderr, " tid= %d  x= %p y= %p z= %p\n",
+        omp_get_thread_num(),
+        x,
+        y,
+        z);
+
+        
     const double a = drand48();
 
-    for (int i = 0; i < N; i++)
+    for (int i = 0; i < N/2; i++)
     {
       x[i] = drand48();
       y[i] = drand48();
@@ -83,12 +99,13 @@ int main(int argc, char * argv[])
         bytes/dt/1e9,
         flops/dt/1e9);
 
-#pragma omp critical
+#if 0
     {
       _mm_free(x);
       _mm_free(y);
       _mm_free(z);
     }
+#endif
   }
   {
     fprintf(stderr, " ----- \n");
